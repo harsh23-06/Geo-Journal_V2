@@ -4,15 +4,124 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.MainActivity">
+    tools:context=".activities.MainActivity"
+    android:orientation="vertical">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <androidx.appcompat.widget.LinearLayoutCompat
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
+        app:cardBackgroundColor="@color/quantum_bluegrey100"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="0dp"
+        app:strokeColor="@color/quantum_bluegrey400"
+        app:strokeWidth="1dp"
+        android:orientation="horizontal"
+        android:id="@+id/topLinear">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/allFilter"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:includeFontPadding="false"
+            android:textColor="@color/quantum_black_100"
+            android:textSize="10sp"
+            android:padding="10dp"
+            android:layout_margin="3dp"
+            android:text="All"
+            android:background="@drawable/shape_button_rounded"
+            android:onClick="allFilterTapped"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/resFilter"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:includeFontPadding="false"
+            android:onClick="residentialTapped"
+            android:padding="5dp"
+            android:layout_margin="3dp"
+            android:textColor="@color/quantum_black_100"
+            android:textSize="10sp"
+            android:background="@drawable/shape_button_rounded"
+            android:text="Residential" />
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/comFilter"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:includeFontPadding="false"
+            android:onClick="commercialTapped"
+            android:padding="5dp"
+            android:layout_margin="3dp"
+            android:textColor="@color/quantum_black_100"
+            android:textSize="10sp"
+            android:background="@drawable/shape_button_rounded"
+            android:text="Commercial" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_margin="3dp"
+            android:layout_marginStart="10dp"
+            android:id="@+id/internalLL">
+            <Spinner
+                android:id="@+id/spinner"
+                android:layout_width="fill_parent"
+                android:layout_height="48dp"
+                android:layout_marginStart="30dp"
+                android:background="@color/quantum_brown200"
+                android:spinnerMode="dialog" />
+        </LinearLayout>
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_happy_places_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="visible"
+        app:layout_constraintTop_toBottomOf="@id/topLinear"
+        tools:visibility="gone" />
+
+
+
+    <!--This text view we will make it visible when the list size is 0 means no data available to display in list.-->
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/tv_no_records_available"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/note_text_no_happy_places_found_yet_kindly_add_one"
+        android:textSize="@dimen/no_records_available_text_size"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/viewMap"
+        app:layout_constraintTop_toBottomOf="@+id/rv_happy_places_list"
+        tools:visibility="visible" />
+
+    <Button
+        android:id="@+id/viewMap"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        android:layout_margin="@dimen/fab_margin"
+        android:text="View Map"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/fabAddHappyPlace"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAddHappyPlace"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="@dimen/fab_margin"
+        android:layout_weight="1"
+        android:contentDescription="Button to add places"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:srcCompat="@drawable/ic_action_add_24dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
