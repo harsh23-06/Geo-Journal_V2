@@ -1,4 +1,16 @@
 <resources>
     <string name="app_name">Geo-Journal_V2</string>
     <string name="api_key">AIzaSyAj8a8zwnvw7jtVOPDyA7-c9MITDmiwa7k</string>
+
+    <string-array name="Distance_Filter">
+        <item>All</item>
+        <item>300m</item>
+        <item>800m</item>
+        <item>1km</item>
+        <item>1.5km</item>
+        <item>2km</item>
+        <item>3km</item>
+        <item>5km</item>
+    </string-array>
+
 </resources>
