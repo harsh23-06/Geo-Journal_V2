@@ -27,7 +27,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
     //OnMapReadyCallback interface for implementing google maps
 
     //Class Members
-    private var binding : ActivityMapBinding? = null    //for view binding
+    private lateinit var binding : ActivityMapBinding    //for view binding
     private var mGoogleMap : GoogleMap? = null      //for initializing google map
     private lateinit var autoCompleteFragment : AutocompleteSupportFragment  //auto complete search
 
@@ -39,7 +39,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMapBinding.inflate(layoutInflater)
-        setContentView(binding?.root)
+        setContentView(binding.root)
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -51,7 +51,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         //<----------end----------------------------->
 
         // <----------Google Autocomplete search from places API------------->
-        Places.initialize(applicationContext,getString(R.string.api_key))
+        Places.initialize(applicationContext,getString(R.string.google_maps_api_key))
         //normal use of layout id
         autoCompleteFragment = supportFragmentManager.findFragmentById(R.id.autocomplete_fragment)
                 as AutocompleteSupportFragment
@@ -66,6 +66,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
             override fun onPlaceSelected(place: Place) {
                 val add = place.address
                 val id = place.id
+
                 val latLng = place.latLng
             }
         })

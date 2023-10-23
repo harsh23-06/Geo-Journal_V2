@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.trx.R
 import com.trx.databinding.ActivityMainBinding
-import com.trx.databinding.ActivityMapBinding
 
 class MainActivity : AppCompatActivity() {
 
@@ -21,6 +20,9 @@ class MainActivity : AppCompatActivity() {
                 startActivity(it)
             }
         }
+
+        //when item is clicked
+        //intent to do
 
     }
 }
