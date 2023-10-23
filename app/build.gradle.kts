@@ -1,7 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id ("kotlin-kapt")  //For annotations
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -58,7 +58,8 @@ dependencies {
     //Room database dependencies
     val roomVersion = "2.6.0"
     implementation("androidx.room:room-runtime:$roomVersion")
-    //noinspection KaptUsageInsteadOfKsp
+    ksp("androidx.room:room-compiler:$roomVersion")
+
     implementation("androidx.room:room-ktx:$roomVersion")
 
     //coroutines :

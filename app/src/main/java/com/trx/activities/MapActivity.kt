@@ -16,6 +16,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
@@ -32,7 +33,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
     private lateinit var autoCompleteFragment : AutocompleteSupportFragment  //auto complete search
 
     //Current location
-    private lateinit var currentLocation : Location
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
 
@@ -50,13 +50,13 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         mapFragment.getMapAsync(this)
         //<----------end----------------------------->
 
+
         // <----------Google Autocomplete search from places API------------->
         Places.initialize(applicationContext,getString(R.string.google_maps_api_key))
         //normal use of layout id
         autoCompleteFragment = supportFragmentManager.findFragmentById(R.id.autocomplete_fragment)
                 as AutocompleteSupportFragment
         autoCompleteFragment.setPlaceFields(listOf(Place.Field.ID, Place.Field.ADDRESS, Place.Field.LAT_LNG))
-
 
         autoCompleteFragment.setOnPlaceSelectedListener(object : PlaceSelectionListener {
             override fun onError(place: Status) {
@@ -80,7 +80,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
         //for zoom on current location
         mGoogleMap?.uiSettings?.isZoomControlsEnabled = true
-
         setupMap()
 
     }
@@ -101,12 +100,19 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         mGoogleMap?.isMyLocationEnabled = true
         fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
             if(location != null){
-                currentLocation = location
                 val currentLatLang = LatLng(location.latitude, location.longitude)
-                mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLang,12f))
+                placeMarkerOnMap(currentLatLang)
+                mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLang,15f))
             }
         }
 
+    }
+
+    private fun placeMarkerOnMap(position : LatLng){
+        val marker = MarkerOptions().position(position)
+        marker.title("$position")
+        marker.draggable(true)
+        mGoogleMap?.addMarker(marker)
     }
 
     //showing details on marker click
