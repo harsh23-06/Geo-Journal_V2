@@ -3,6 +3,7 @@ package com.trx.activities
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Geocoder
 import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -85,6 +86,32 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         mGoogleMap?.uiSettings?.isZoomControlsEnabled = true
         setupMap()
 
+        if(intent.hasExtra("ADD")) {
+            googleMap.setOnMarkerDragListener(object : GoogleMap.OnMarkerDragListener {
+                override fun onMarkerDrag(marker: Marker) {
+                }
+
+                override fun onMarkerDragStart(marker: Marker) {
+                }
+
+                //Starting the placeForm activity on marker Drag end
+                override fun onMarkerDragEnd(marker: Marker) {
+                    val position = marker.position
+                    val latitude = position.latitude
+                    val longitude = position.longitude
+                    val title = getAddress(latitude, longitude)
+
+                    Intent(this@MapActivity, PlaceFormActivity::class.java).also {
+                        it.putExtra("DRAG_LATITUDE", latitude)
+                        it.putExtra("DRAG_LONGITUDE", longitude)
+                        it.putExtra("DRAG_TITLE", title)
+                        startActivity(it)
+                    }
+
+                }
+            })
+        }
+
     }
 
     private fun setupMap() {
@@ -116,6 +143,13 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         marker.title("$position")
         marker.draggable(true)
         mGoogleMap?.addMarker(marker)
+    }
+
+    //getting address from latitude and longitude
+    private fun getAddress(latitude : Double, longitude: Double) : String{
+        val geocoder = Geocoder(this)
+        val list = geocoder.getFromLocation(latitude,longitude,1)
+        return list!![0].getAddressLine(0)
     }
 
     //showing details on marker click
