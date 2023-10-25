@@ -1,6 +1,7 @@
 package com.trx.activities
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
@@ -52,7 +53,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
 
         // <----------Google Autocomplete search from places API------------->
-        Places.initialize(applicationContext,getString(R.string.google_maps_api_key))
+        Places.initialize(applicationContext,getString(R.string.api_key))
         //normal use of layout id
         autoCompleteFragment = supportFragmentManager.findFragmentById(R.id.autocomplete_fragment)
                 as AutocompleteSupportFragment
@@ -66,8 +67,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
             override fun onPlaceSelected(place: Place) {
                 val add = place.address
                 val id = place.id
-
                 val latLng = place.latLng
+                val intent = Intent(this@MapActivity,AddHappyPlaceActivity::class.java)
+
+                startActivity(intent)
             }
         })
         //<-------------Autocomplete Search ends here----------------->
