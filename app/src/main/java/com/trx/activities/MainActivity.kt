@@ -25,9 +25,8 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        database = Room.databaseBuilder(applicationContext,
-            PlacesDatabase::class.java,
-            "Places_DB").build()
+        //Getting list of all the places
+        placesList = database.contactDao().getPlaces()
 
         //Handling the Spinner
         binding.spDistance.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
