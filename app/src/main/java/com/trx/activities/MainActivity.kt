@@ -7,9 +7,8 @@ import android.view.View
 import android.widget.AdapterView
 import androidx.room.Room
 import com.trx.R
-import com.trx.database.placesDatabase
+import com.trx.database.PlacesDatabase
 import com.trx.databinding.ActivityMainBinding
-import com.trx.databinding.ActivityMapBinding
 import com.trx.models.PlaceModel
 
 class MainActivity : AppCompatActivity() {
@@ -18,7 +17,7 @@ class MainActivity : AppCompatActivity() {
 
     private var placesList : ArrayList<PlaceModel>? = null     //List of Places
 
-    private lateinit var database : placesDatabase
+    private lateinit var database : PlacesDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,7 +25,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         database = Room.databaseBuilder(applicationContext,
-            placesDatabase::class.java,
+            PlacesDatabase::class.java,
             "Places_DB").build()
 
         //Handling the Spinner
@@ -49,15 +48,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnViewMap.setOnClickListener {
-            intent.putExtra("VIEW","VIEW_MAP")
-            Intent(this,MapActivity::class.java).also{
+            Intent(this,MapActivity::class.java)
+                .putExtra("VIEW","VIEW_MAP").also{
                 startActivity(it)
             }
         }
 
         binding.btnAddPlace.setOnClickListener{
-            intent.putExtra("ADD","ADDON_MAP")
             Intent(this,MapActivity::class.java).also {
+                it.putExtra("ADD","ADDON_MAP")
                 startActivity(it)
             }
         }

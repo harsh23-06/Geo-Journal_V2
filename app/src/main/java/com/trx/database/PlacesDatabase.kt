@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import com.trx.models.PlaceModel
 
 @Database([PlaceModel::class], version = 1)
-abstract class placesDatabase : RoomDatabase(){
+abstract class PlacesDatabase : RoomDatabase(){
 
     abstract fun contactDao() : PlacesDao
 

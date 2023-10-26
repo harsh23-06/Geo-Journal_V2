@@ -104,12 +104,12 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
                 val position = marker.position
                 val latitude = position.latitude
                 val longitude = position.longitude
-                val title = getAddress(latitude, longitude)
+                val address = getAddress(latitude, longitude)
 
                 Intent(this@MapActivity, PlaceFormActivity::class.java).also {
                     it.putExtra("DRAG_LATITUDE", latitude)
                     it.putExtra("DRAG_LONGITUDE", longitude)
-                    it.putExtra("DRAG_TITLE", title)
+                    it.putExtra("DRAG_ADDRESS", address)
                     startActivity(it)
                 }
             }
@@ -133,7 +133,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
             if (location != null) {
                 val currentLatLang = LatLng(location.latitude, location.longitude)
-                placeMarkerOnMap(currentLatLang)
+                if(intent.hasExtra("ADD")) placeMarkerOnMap(currentLatLang)
                 mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLang, 15f))
             }
         }
@@ -142,7 +142,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
     private fun placeMarkerOnMap(position: LatLng) {
         val marker = MarkerOptions().position(position)
-        marker.title("$position")
+        marker.title("Drag me to select a location")
         marker.draggable(true)
         mGoogleMap?.addMarker(marker)
     }
