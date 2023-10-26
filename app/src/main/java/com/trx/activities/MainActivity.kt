@@ -20,6 +20,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var database : PlacesDatabase
 
+    //correcting changes
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
