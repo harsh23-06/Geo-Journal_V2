@@ -54,7 +54,6 @@ class PlaceFormActivity : AppCompatActivity() {
         if (intent.hasExtra("DRAG_LATITUDE") && intent.hasExtra("DRAG_LONGITUDE") &&
             intent.hasExtra("DRAG_ADDRESS")
         ) {
-
             try {
                 latitude = intent.getDoubleExtra("DRAG_LATITUDE", 0.0)
                 longitude = intent.getDoubleExtra("DRAG_LONGITUDE", 0.0)
@@ -72,14 +71,16 @@ class PlaceFormActivity : AppCompatActivity() {
         if (intent.hasExtra("SEARCH_LATITUDE") && intent.hasExtra("SEARCH_LONGITUDE") &&
             intent.hasExtra("SEARCH_ADDRESS")
         ) {
-            try{
-                latitude = intent.getDoubleExtra("SEARCH_LATITUDE",0.0)
-                longitude = intent.getDoubleExtra("SEARCH_LONGITUDE",0.0)
+            try {
+                latitude = intent.getDoubleExtra("SEARCH_LATITUDE", 0.0)
+                longitude = intent.getDoubleExtra("SEARCH_LONGITUDE", 0.0)
                 address = intent.getStringExtra("SEARCH_ADDRESS").toString()
                 binding.tvAddress.text = address
-            }catch (e : Exception){
-                Toast.makeText(this, "Error in fetching location Details",
-                    Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Toast.makeText(
+                    this, "Error in fetching location Details",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 

@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
+import androidx.lifecycle.LiveData
 import androidx.room.Room
 import com.trx.R
 import com.trx.database.PlacesDatabase
@@ -24,9 +25,8 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        database = Room.databaseBuilder(applicationContext,
-            PlacesDatabase::class.java,
-            "Places_DB").build()
+        //Getting list of all the places
+        placesList = database.contactDao().getPlaces()
 
         //Handling the Spinner
         binding.spDistance.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
