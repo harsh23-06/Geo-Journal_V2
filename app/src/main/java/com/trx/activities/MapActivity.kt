@@ -54,7 +54,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
 
         // <----------Google Autocomplete search from places API------------->
-        Places.initialize(applicationContext,getString(R.string.api_key))
+        Places.initialize(applicationContext,getString(R.string.google_maps_api_key))
         //normal use of layout id
         autoCompleteFragment = supportFragmentManager.findFragmentById(R.id.autocomplete_fragment)
                 as AutocompleteSupportFragment
@@ -69,8 +69,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
                 val add = place.address
                 val id = place.id
                 val latLng = place.latLng
-                val intent = Intent(this@MapActivity,AddHappyPlaceActivity::class.java)
-
+                val intent = Intent(this@MapActivity,PlaceFormActivity::class.java)
+                intent.putExtra("Address",add)
+                intent.putExtra("Lat",latLng.latitude)
+                intent.putExtra("Long",latLng.longitude)
                 startActivity(intent)
             }
         })
