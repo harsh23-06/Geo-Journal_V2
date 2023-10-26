@@ -66,7 +66,21 @@ class PlaceFormActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT
                 ).show()
             }
+        }
 
+        //if intent is coming from the search activity
+        if (intent.hasExtra("SEARCH_LATITUDE") && intent.hasExtra("SEARCH_LONGITUDE") &&
+            intent.hasExtra("SEARCH_ADDRESS")
+        ) {
+            try{
+                latitude = intent.getDoubleExtra("SEARCH_LATITUDE",0.0)
+                longitude = intent.getDoubleExtra("SEARCH_LONGITUDE",0.0)
+                address = intent.getStringExtra("SEARCH_ADDRESS").toString()
+                binding.tvAddress.text = address
+            }catch (e : Exception){
+                Toast.makeText(this, "Error in fetching location Details",
+                    Toast.LENGTH_SHORT).show()
+            }
         }
 
         //Handling click on radio Buttons
@@ -98,6 +112,7 @@ class PlaceFormActivity : AppCompatActivity() {
                     this, "Fields cannot be Empty",
                     Toast.LENGTH_SHORT
                 ).show()
+                return@setOnClickListener
             }
 
             title = binding.tvTitle.text.toString()
@@ -117,10 +132,12 @@ class PlaceFormActivity : AppCompatActivity() {
                 database.contactDao().insertPlace(placeObj)
             }
 
-            Toast.makeText(this, "Place Inserted",
-                Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                this, "Place Inserted",
+                Toast.LENGTH_SHORT
+            ).show()
 
-            Intent(this,MainActivity::class.java).also {
+            Intent(this, MainActivity::class.java).also {
                 startActivity(it)
             }
         }
