@@ -21,9 +21,5 @@ interface PlacesDao {
     fun deletePlace(place: PlaceModel)
 
     @Query("SELECT * FROM Places")
-    fun getPlaces() : LiveData<List<PlaceModel>>
-
-    //will return the list when category(res or com) will passed
-    @Query("SELECT * FROM Places WHERE category = :category")
-    fun getPlacesWithDesc(category: String): LiveData<List<PlaceModel>>
+    fun getPlaces() : ArrayList<PlaceModel>
 }

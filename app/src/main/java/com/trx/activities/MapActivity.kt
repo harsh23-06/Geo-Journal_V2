@@ -60,12 +60,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
                 as AutocompleteSupportFragment
         autoCompleteFragment.setPlaceFields(
             listOf(
-                Place.Field.ID,
                 Place.Field.ADDRESS,
                 Place.Field.LAT_LNG
             )
         )
-
         autoCompleteFragment.setOnPlaceSelectedListener(object : PlaceSelectionListener {
             override fun onError(place: Status) {
                 Toast.makeText(
@@ -75,9 +73,18 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
             }
 
             override fun onPlaceSelected(place: Place) {
-                val add = place.address
-                val id = place.id
+                val address = place.address
                 val latLng = place.latLng
+
+                val latitude = latLng?.latitude
+                val longitude = latLng?.longitude
+
+                Intent(this@MapActivity, PlaceFormActivity::class.java).also {
+                    it.putExtra("SEARCH_LATITUDE", latitude)
+                    it.putExtra("SEARCH_LONGITUDE", longitude)
+                    it.putExtra("SEARCH_ADDRESS", address)
+                    startActivity(it)
+                }
             }
         })
         //<-------------Autocomplete Search ends here----------------->
@@ -92,6 +99,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         mGoogleMap?.uiSettings?.isZoomControlsEnabled = true
         setupMap()
 
+        //functions of draggable marker
         googleMap.setOnMarkerDragListener(object : GoogleMap.OnMarkerDragListener {
             override fun onMarkerDrag(marker: Marker) {
             }
@@ -113,7 +121,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
                     startActivity(it)
                 }
             }
+
         })
+
     }
 
     private fun setupMap() {
