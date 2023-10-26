@@ -18,7 +18,7 @@ class MainActivity : AppCompatActivity() {
 
     private var placesList : LiveData<List<PlaceModel>>? = null     //List of Places
 
-    private lateinit var database : PlacesDatabase
+    //private lateinit var database : PlacesDatabase
 
     //correcting changes
 
@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         //Getting list of all the places
-        placesList = database.contactDao().getPlaces()
+        //placesList = database.contactDao().getPlaces()
 
         //Handling the Spinner
         binding.spDistance.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
