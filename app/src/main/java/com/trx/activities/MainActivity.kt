@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
+import androidx.lifecycle.LiveData
 import androidx.room.Room
 import com.trx.R
 import com.trx.database.PlacesDatabase
@@ -15,7 +16,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-    private var placesList : ArrayList<PlaceModel>? = null     //List of Places
+    private var placesList : LiveData<List<PlaceModel>>? = null     //List of Places
 
     private lateinit var database : PlacesDatabase
 
