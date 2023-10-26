@@ -30,9 +30,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
     //OnMapReadyCallback interface for implementing google maps
 
     //Class Members
-    private lateinit var binding : ActivityMapBinding    //for view binding
-    private var mGoogleMap : GoogleMap? = null      //for initializing google map
-    private lateinit var autoCompleteFragment : AutocompleteSupportFragment  //auto complete search
+    private var binding: ActivityMapBinding? = null    //for view binding
+    private var mGoogleMap: GoogleMap? = null      //for initializing google map
+    private lateinit var autoCompleteFragment: AutocompleteSupportFragment  //auto complete search
 
     //Current location
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
@@ -41,7 +41,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMapBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(binding?.root)
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -54,26 +54,30 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
 
         // <----------Google Autocomplete search from places API------------->
-        Places.initialize(applicationContext,getString(R.string.google_maps_api_key))
+        Places.initialize(applicationContext, getString(R.string.api_key))
         //normal use of layout id
         autoCompleteFragment = supportFragmentManager.findFragmentById(R.id.autocomplete_fragment)
                 as AutocompleteSupportFragment
-        autoCompleteFragment.setPlaceFields(listOf(Place.Field.ID, Place.Field.ADDRESS, Place.Field.LAT_LNG))
+        autoCompleteFragment.setPlaceFields(
+            listOf(
+                Place.Field.ID,
+                Place.Field.ADDRESS,
+                Place.Field.LAT_LNG
+            )
+        )
 
         autoCompleteFragment.setOnPlaceSelectedListener(object : PlaceSelectionListener {
             override fun onError(place: Status) {
-                Toast.makeText(this@MapActivity, "Some Error in Search",
-                    Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@MapActivity, "Some Error in Search",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
+
             override fun onPlaceSelected(place: Place) {
                 val add = place.address
                 val id = place.id
                 val latLng = place.latLng
-                val intent = Intent(this@MapActivity,PlaceFormActivity::class.java)
-                intent.putExtra("Address",add)
-                intent.putExtra("Lat",latLng.latitude)
-                intent.putExtra("Long",latLng.longitude)
-                startActivity(intent)
             }
         })
         //<-------------Autocomplete Search ends here----------------->
@@ -88,32 +92,28 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         mGoogleMap?.uiSettings?.isZoomControlsEnabled = true
         setupMap()
 
-        if(intent.hasExtra("ADD")) {
-            googleMap.setOnMarkerDragListener(object : GoogleMap.OnMarkerDragListener {
-                override fun onMarkerDrag(marker: Marker) {
+        googleMap.setOnMarkerDragListener(object : GoogleMap.OnMarkerDragListener {
+            override fun onMarkerDrag(marker: Marker) {
+            }
+
+            override fun onMarkerDragStart(marker: Marker) {
+            }
+
+            //Starting the placeForm activity on marker Drag end
+            override fun onMarkerDragEnd(marker: Marker) {
+                val position = marker.position
+                val latitude = position.latitude
+                val longitude = position.longitude
+                val address = getAddress(latitude, longitude)
+
+                Intent(this@MapActivity, PlaceFormActivity::class.java).also {
+                    it.putExtra("DRAG_LATITUDE", latitude)
+                    it.putExtra("DRAG_LONGITUDE", longitude)
+                    it.putExtra("DRAG_ADDRESS", address)
+                    startActivity(it)
                 }
-
-                override fun onMarkerDragStart(marker: Marker) {
-                }
-
-                //Starting the placeForm activity on marker Drag end
-                override fun onMarkerDragEnd(marker: Marker) {
-                    val position = marker.position
-                    val latitude = position.latitude
-                    val longitude = position.longitude
-                    val title = getAddress(latitude, longitude)
-
-                    Intent(this@MapActivity, PlaceFormActivity::class.java).also {
-                        it.putExtra("DRAG_LATITUDE", latitude)
-                        it.putExtra("DRAG_LONGITUDE", longitude)
-                        it.putExtra("DRAG_TITLE", title)
-                        startActivity(it)
-                    }
-
-                }
-            })
-        }
-
+            }
+        })
     }
 
     private fun setupMap() {
@@ -131,26 +131,26 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         }
         mGoogleMap?.isMyLocationEnabled = true
         fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
-            if(location != null){
+            if (location != null) {
                 val currentLatLang = LatLng(location.latitude, location.longitude)
-                placeMarkerOnMap(currentLatLang)
-                mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLang,15f))
+                if(intent.hasExtra("ADD")) placeMarkerOnMap(currentLatLang)
+                mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLang, 15f))
             }
         }
 
     }
 
-    private fun placeMarkerOnMap(position : LatLng){
+    private fun placeMarkerOnMap(position: LatLng) {
         val marker = MarkerOptions().position(position)
-        marker.title("$position")
+        marker.title("Drag me to select a location")
         marker.draggable(true)
         mGoogleMap?.addMarker(marker)
     }
 
     //getting address from latitude and longitude
-    private fun getAddress(latitude : Double, longitude: Double) : String{
+    private fun getAddress(latitude: Double, longitude: Double): String {
         val geocoder = Geocoder(this)
-        val list = geocoder.getFromLocation(latitude,longitude,1)
+        val list = geocoder.getFromLocation(latitude, longitude, 1)
         return list!![0].getAddressLine(0)
     }
 

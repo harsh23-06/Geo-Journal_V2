@@ -1,88 +1,140 @@
 package com.trx.activities
 
 import android.app.DatePickerDialog
-import android.location.Geocoder
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
 import android.widget.DatePicker
+import android.widget.Toast
 import androidx.room.Room
-import androidx.room.RoomDatabase
-import com.trx.R
-import com.trx.database.placesDatabase
-import com.trx.databinding.ActivityMainBinding
+import com.trx.database.PlacesDatabase
 import com.trx.databinding.ActivityPlaceFormBinding
 import com.trx.models.PlaceModel
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-class PlaceFormActivity : AppCompatActivity(), View.OnClickListener {
+class PlaceFormActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityPlaceFormBinding
-    private lateinit var database: placesDatabase
-    private var mLatitude: Double = 0.0 // A variable which will hold the latitude value.
-    private var mLongitude: Double = 0.0 // A variable which will hold the longitude value.
-    private var mTitle = ""
-    private var mPlaceDetails: PlaceModel? = null
+
+    //initializing our database
+    private lateinit var database: PlacesDatabase
+
+    //Properties of our place object
+    private lateinit var title: String
+    private lateinit var date: String
+    private var latitude: Double = 0.00
+    private var longitude: Double = 0.00
+    private lateinit var address: String
+    private lateinit var category: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPlaceFormBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        //setting up toolbar
         setSupportActionBar(binding.pfToolbar)
+        supportActionBar?.title = "Add place"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        val currentDate = getCurrentDate()
+        binding.date.text = "Date : $currentDate"
 
         database = Room.databaseBuilder(
             applicationContext,
-            placesDatabase::class.java,
+            PlacesDatabase::class.java,
             "PlacesDB"
         ).build()
 
-        //date will be autoSet when the activity is created
-        val currentDate = getCurrentDate()
-        binding.date.setText(currentDate)
+        //if the intent is coming from the draggable marker
+        if (intent.hasExtra("DRAG_LATITUDE") && intent.hasExtra("DRAG_LONGITUDE") &&
+            intent.hasExtra("DRAG_ADDRESS")
+        ) {
 
-        //intent to edit list item
-        if(intent.hasExtra("Item")){
-            mPlaceDetails = intent.getSerializableExtra("Item") as PlaceModel
-        }
-        //if edit is asked
-        if(mPlaceDetails != null){
-            supportActionBar?.title = "Edit Place"
-
-            binding.title.setText(mPlaceDetails!!.title)
-            binding.description.text =mPlaceDetails!!.category
-            binding.date.setText(mPlaceDetails!!.date)
-            binding.location.text = mPlaceDetails!!.location
-            mLatitude = mPlaceDetails!!.latitude
-            mLongitude = mPlaceDetails!!.longitude
-        }
-
-        //intent from places fragment
-        if(intent.hasExtra("Add") and intent.hasExtra("Lat") and intent.hasExtra("Long")){
-
-        }
-        //intent from draggable marker
-        if(intent.hasExtra("DRAG_LATITUDE") and intent.hasExtra("DRAG_LONGITUDE") and intent.hasExtra("DRAG_TITLE")){
-
-        }
-
-        binding.date.setOnClickListener(this)
-
-    }
-
-    override fun onClick(v: View?) {
-        when(v!!.id){
-            R.id.date ->{
-                showDatePickerDialog()
+            try {
+                latitude = intent.getDoubleExtra("DRAG_LATITUDE", 0.0)
+                longitude = intent.getDoubleExtra("DRAG_LONGITUDE", 0.0)
+                address = intent.getStringExtra("DRAG_ADDRESS").toString()
+                binding.tvAddress.text = address
+            } catch (e: Exception) {
+                Toast.makeText(
+                    this, "Some error in fetching place",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
 
         }
+
+        //Handling click on radio Buttons
+        binding.rbgCategory.setOnCheckedChangeListener { _, checkedId ->
+            when (checkedId) {
+                binding.rbCommercial.id -> {
+                    category = "COMMERCIAL"
+                }
+
+                binding.rbResidential.id -> {
+                    category = "RESIDENTIAL"
+                }
+            }
+        }
+
+        //Handling date text View
+        binding.date.setOnClickListener {
+            showDatePickerDialog()
+        }
+
+        //Adding the place to the database
+        binding.btnAdd.setOnClickListener {
+
+            //fields validation
+            if (binding.tvTitle.text.isEmpty() || category.isEmpty() ||
+                binding.tvAddress.text.isEmpty()
+            ) {
+                Toast.makeText(
+                    this, "Fields cannot be Empty",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
+            title = binding.tvTitle.text.toString()
+            date = binding.date.text.toString()
+
+            val placeObj = PlaceModel(
+                0,
+                title,
+                category,
+                date,
+                address,
+                latitude,
+                longitude
+            )
+
+            GlobalScope.launch {
+                database.contactDao().insertPlace(placeObj)
+            }
+
+            Toast.makeText(this, "Place Inserted",
+                Toast.LENGTH_SHORT).show()
+
+            Intent(this,MainActivity::class.java).also {
+                startActivity(it)
+            }
+        }
+
     }
 
+    //for getting the current date
+    private fun getCurrentDate(): String {
+        val calendar = Calendar.getInstance()
+        val dateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+        return dateFormat.format(calendar.time)
+    }
 
-    //after clicking on date ediText
+    //for showing the date picker dialog after click
     private fun showDatePickerDialog() {
         val calendar = Calendar.getInstance()
         val currentYear = calendar.get(Calendar.YEAR)
@@ -99,12 +151,10 @@ class PlaceFormActivity : AppCompatActivity(), View.OnClickListener {
             currentMonth,
             currentDay
         )
-
-
-
         datePickerDialog.show()
     }
-    //date will set after date is picked
+
+    //After selecting date from dialog and setting it in text view
     private fun onDateSet(year: Int, month: Int, dayOfMonth: Int) {
         val selectedDate = Calendar.getInstance()
         selectedDate.set(Calendar.YEAR, year)
@@ -114,23 +164,8 @@ class PlaceFormActivity : AppCompatActivity(), View.OnClickListener {
         val dateFormat = SimpleDateFormat("dd-MM-yyyy")
         val formattedDate = dateFormat.format(selectedDate.time)
 
-        // Update the date with the selected date
-        binding.date.setText(formattedDate)
-    }
-    private fun getAddress(latitude: Double, longitude: Double): String {
-        val geocoder = Geocoder(this)
-        val list = geocoder.getFromLocation(latitude, longitude, 1)
-        return list!![0].getAddressLine(0)
+        binding.date.text = "Date : $formattedDate"
     }
 
-    //auto set date
-    private fun getCurrentDate(): String {
-        val calendar = Calendar.getInstance()
-        val dateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
-        return dateFormat.format(calendar.time)
-    }
-    private fun swipeCallBack(){
-
-    }
 
 }
