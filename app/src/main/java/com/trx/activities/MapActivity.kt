@@ -65,9 +65,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
             )
         )
         autoCompleteFragment.setOnPlaceSelectedListener(object : PlaceSelectionListener {
+
             override fun onError(place: Status) {
                 Toast.makeText(
-                    this@MapActivity, "Some Error in Search",
+                    this@MapActivity, "Cannot Fetch Location",
                     Toast.LENGTH_SHORT
                 ).show()
             }

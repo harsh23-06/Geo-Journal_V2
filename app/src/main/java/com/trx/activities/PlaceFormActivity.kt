@@ -39,7 +39,7 @@ class PlaceFormActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         //setting up toolbar
-        setSupportActionBar(binding.pfToolbar)
+        setSupportActionBar(binding.toolbar.customToolbar)
         supportActionBar?.title = "Add place"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 

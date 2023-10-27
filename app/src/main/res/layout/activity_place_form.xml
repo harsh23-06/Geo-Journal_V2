@@ -6,12 +6,10 @@
     android:orientation="vertical"
     tools:context=".activities.PlaceFormActivity">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/pf_toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/button">
-    </androidx.appcompat.widget.Toolbar>
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/app_toolbar"
+        />
 
     <EditText
         android:id="@+id/tv_title"
@@ -85,6 +83,7 @@
             android:contentDescription="Date picker" />
 
     </LinearLayout>
+
     <TextView
         android:id="@+id/tv_address"
         android:layout_width="wrap_content"
