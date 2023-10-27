@@ -19,6 +19,8 @@ import com.trx.databinding.ActivityMainBinding
 import com.trx.models.PlaceModel
 import com.trx.swipe.SwipeToDeleteCallback
 import com.trx.swipe.SwipeToEditCallback
+import kotlin.math.atan2
+import kotlin.math.sqrt
 
 class MainActivity : AppCompatActivity() {
 
@@ -151,6 +153,22 @@ class MainActivity : AppCompatActivity() {
         val deleteItemTouchHelper = ItemTouchHelper(deleteSwipeHandler)
         deleteItemTouchHelper.attachToRecyclerView(binding.placesList)
     }
-
+    private fun calculateDistance(
+        lat1: Double,
+        lon1: Double,
+        lat2: Double,
+        lon2: Double
+    ): Double {
+        val radiusOfEarth = 6371 // Earth's radius in kilometers
+        val lat1Rad = Math.toRadians(lat1)
+        val lat2Rad = Math.toRadians(lat2)
+        val deltaLat = Math.toRadians(lat2 - lat1)
+        val deltaLon = Math.toRadians(lon2 - lon1)
+        val a = kotlin.math.sin(deltaLat / 2) * kotlin.math.sin(deltaLat / 2) +
+                kotlin.math.cos(lat1Rad) * kotlin.math.cos(lat2Rad) *
+                kotlin.math.sin(deltaLon / 2) * kotlin.math.sin(deltaLon / 2)
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        return radiusOfEarth * c * 1000
+    }
 
 }
