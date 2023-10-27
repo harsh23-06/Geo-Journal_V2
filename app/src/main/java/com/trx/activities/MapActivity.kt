@@ -54,7 +54,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
 
         // <----------Google Autocomplete search from places API------------->
-        Places.initialize(applicationContext, getString(R.string.api_key))
+        Places.initialize(applicationContext, getString(R.string.google_maps_api_key))
         //normal use of layout id
         autoCompleteFragment = supportFragmentManager.findFragmentById(R.id.autocomplete_fragment)
                 as AutocompleteSupportFragment
