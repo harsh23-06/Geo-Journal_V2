@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
 import androidx.lifecycle.LiveData
-import androidx.room.Room
 import com.trx.R
 import com.trx.database.PlacesDatabase
 import com.trx.databinding.ActivityMainBinding
@@ -50,6 +49,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        //Handling the View Map button
         binding.btnViewMap.setOnClickListener {
             Intent(this,MapActivity::class.java)
                 .putExtra("VIEW","VIEW_MAP").also{
@@ -57,6 +57,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        //Handling the ADD Button
         binding.btnAddPlace.setOnClickListener{
             Intent(this,MapActivity::class.java).also {
                 it.putExtra("ADD","ADDON_MAP")

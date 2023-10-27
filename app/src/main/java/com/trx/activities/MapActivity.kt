@@ -128,6 +128,13 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
     private fun setupMap() {
 
+        val requestCode = 69
+
+        val permissions = arrayOf(
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        )
+
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -136,18 +143,26 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            //TODO : Have to request permission from user
-            return
-        }
-        mGoogleMap?.isMyLocationEnabled = true
-        fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
-            if (location != null) {
-                val currentLatLang = LatLng(location.latitude, location.longitude)
-                if(intent.hasExtra("ADD")) placeMarkerOnMap(currentLatLang)
-                mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLang, 15f))
+            ActivityCompat.requestPermissions(this, permissions, requestCode)
+            setupMap()
+        } else {
+            mGoogleMap?.isMyLocationEnabled = true
+            fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
+                if (location != null) {
+                    val currentLatLang = LatLng(location.latitude, location.longitude)
+                    if (intent.hasExtra("ADD")) placeMarkerOnMap(currentLatLang)
+                    mGoogleMap?.animateCamera(
+                        CameraUpdateFactory.newLatLngZoom(
+                            currentLatLang,
+                            15f
+                        )
+                    )
+                } else {
+                    Toast.makeText(this, "Cannot fetch current place",
+                        Toast.LENGTH_SHORT).show()
+                }
             }
         }
-
     }
 
     private fun placeMarkerOnMap(position: LatLng) {

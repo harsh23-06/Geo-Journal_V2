@@ -12,7 +12,6 @@ import com.trx.database.PlacesDatabase
 import com.trx.databinding.ActivityPlaceFormBinding
 import com.trx.models.PlaceModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -179,7 +178,7 @@ class PlaceFormActivity : AppCompatActivity() {
 
         val datePickerDialog = DatePickerDialog(
             this,
-            DatePickerDialog.OnDateSetListener { _: DatePicker?, year: Int, month: Int, dayOfMonth: Int ->
+            { _: DatePicker?, year: Int, month: Int, dayOfMonth: Int ->
                 // Handle the selected date
                 onDateSet(year, month, dayOfMonth)
             },
