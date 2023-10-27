@@ -21,5 +21,5 @@ interface PlacesDao {
     fun deletePlace(place: PlaceModel)
 
     @Query("SELECT * FROM Places")
-    fun getPlaces() : ArrayList<PlaceModel>
+    fun getPlaces() : LiveData<List<PlaceModel>>?
 }

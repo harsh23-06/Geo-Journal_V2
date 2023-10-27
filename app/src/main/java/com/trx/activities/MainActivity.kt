@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-    private var placesList: ArrayList<PlaceModel>? = null     //List of Places
+    private var placesList : LiveData<List<PlaceModel>>? = null     //List of Places
 
     private var fusedLocationClient: FusedLocationProviderClient? = null
 
@@ -38,6 +38,7 @@ class MainActivity : AppCompatActivity() {
         //Getting list of all the places
         placesList = database.contactDao().getPlaces()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        //placesList = database.contactDao().getPlaces()
 
         //Handling the Spinner
         binding.spDistance.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -58,7 +59,6 @@ class MainActivity : AppCompatActivity() {
                 }
 
             }
-
             override fun onNothingSelected(adapterView: AdapterView<*>?) {
 
             }
