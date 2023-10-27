@@ -18,17 +18,18 @@ class MainActivity : AppCompatActivity() {
 
     private var placesList : LiveData<List<PlaceModel>>? = null     //List of Places
 
-    //private lateinit var database : PlacesDatabase
-
-    //correcting changes
+    private lateinit var database : PlacesDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        //Getting list of all the places
-        //placesList = database.contactDao().getPlaces()
+        //Instantiating the Database
+        database = PlacesDatabase.getInstance(applicationContext)
+
+        //Getting all the places
+        placesList = database.contactDao().getPlaces()
 
         //Handling the Spinner
         binding.spDistance.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
