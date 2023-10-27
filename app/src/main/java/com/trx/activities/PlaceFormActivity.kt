@@ -4,14 +4,17 @@ import android.app.DatePickerDialog
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.MenuItem
 import android.widget.DatePicker
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.trx.database.PlacesDatabase
 import com.trx.databinding.ActivityPlaceFormBinding
 import com.trx.models.PlaceModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -96,7 +99,7 @@ class PlaceFormActivity : AppCompatActivity() {
         }
 
         //Handling date text View
-        binding.date.setOnClickListener {
+        binding.btnCalendar.setOnClickListener {
             showDatePickerDialog()
         }
 
@@ -127,21 +130,37 @@ class PlaceFormActivity : AppCompatActivity() {
                 longitude
             )
 
-            //Creating coroutine scope to perform an DB Operation
-            GlobalScope.launch {
-                database.contactDao().insertPlace(placeObj)
+            //Creating coroutine scope to perform an DB Operation (using lifecycleScope instead of GlobalScope)
+            lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    database.contactDao().insertPlace(placeObj)
+                }
+                Toast.makeText(
+                    this@PlaceFormActivity, "Place Inserted",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                Intent(
+                    this@PlaceFormActivity,
+                    MainActivity::class.java
+                ).also {
+                    //We are using flags in intent to clear the back stack of activities
+                    it.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    startActivity(it)
+                }
             }
+            //finish() Instead of it we have used flags in our intent
+        }
+    }
 
-            Toast.makeText(
-                this, "Place Inserted",
-                Toast.LENGTH_SHORT
-            ).show()
-
-            Intent(this, MainActivity::class.java).also {
-                startActivity(it)
+    //Handling back Button on toolbar
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId) {
+            android.R.id.home ->{
+                onBackPressedDispatcher.onBackPressed()
             }
         }
-
+        return super.onOptionsItemSelected(item)
     }
 
     //for getting the current date
