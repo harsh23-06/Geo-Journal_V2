@@ -28,15 +28,19 @@ class MainActivity : AppCompatActivity() {
 
     private var fusedLocationClient: FusedLocationProviderClient? = null
 
-    private lateinit var database: PlacesDatabase
+    private lateinit var database : PlacesDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        //Getting list of all the places
+        //Instantiating the Database
+        database = PlacesDatabase.getInstance(applicationContext)
+
+        //Getting all the places
         placesList = database.contactDao().getPlaces()
+        //Getting list of all the places
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         //placesList = database.contactDao().getPlaces()
 
@@ -51,7 +55,7 @@ class MainActivity : AppCompatActivity() {
             ) {
                 val selectedDistance = distanceArray[position]
 
-                when (selectedDistance) {
+                when(selectedDistance){
                     "All" -> {
 
                     }

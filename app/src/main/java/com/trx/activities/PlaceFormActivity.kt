@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.DatePicker
 import android.widget.Toast
-import androidx.room.Room
+import androidx.lifecycle.lifecycleScope
 import com.trx.database.PlacesDatabase
 import com.trx.databinding.ActivityPlaceFormBinding
 import com.trx.models.PlaceModel
@@ -41,14 +41,12 @@ class PlaceFormActivity : AppCompatActivity() {
         supportActionBar?.title = "Add place"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
+        //Getting current date
         val currentDate = getCurrentDate()
         binding.date.text = "Date : $currentDate"
 
-        database = Room.databaseBuilder(
-            applicationContext,
-            PlacesDatabase::class.java,
-            "PlacesDB"
-        ).build()
+        //Getting instance of the database
+        database = PlacesDatabase.getInstance(applicationContext)
 
         //if the intent is coming from the draggable marker
         if (intent.hasExtra("DRAG_LATITUDE") && intent.hasExtra("DRAG_LONGITUDE") &&
@@ -129,6 +127,7 @@ class PlaceFormActivity : AppCompatActivity() {
                 longitude
             )
 
+            //Creating coroutine scope to perform an DB Operation
             GlobalScope.launch {
                 database.contactDao().insertPlace(placeObj)
             }
