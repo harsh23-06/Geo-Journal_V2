@@ -103,7 +103,7 @@ class MainActivity : AppCompatActivity() {
         internal const val EXTRA_PLACE_DETAILS = "extra_place_details"
     }
 
-    private fun setupHappyPlacesRecyclerView(happyPlacesList: ArrayList<PlaceModel>) {
+    private fun setupHappyPlacesRecyclerView(happyPlacesList: LiveData<List<PlaceModel>>?) {
         binding.placesList.layoutManager = LinearLayoutManager(this)
         binding.placesList.setHasFixedSize(true)
 
