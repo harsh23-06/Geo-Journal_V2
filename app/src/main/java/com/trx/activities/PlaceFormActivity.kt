@@ -4,9 +4,11 @@ import android.app.DatePickerDialog
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import android.widget.DatePicker
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
+import com.trx.R
 import com.trx.database.PlacesDatabase
 import com.trx.databinding.ActivityPlaceFormBinding
 import com.trx.models.PlaceModel
@@ -16,20 +18,22 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-class PlaceFormActivity : AppCompatActivity() {
+class PlaceFormActivity : AppCompatActivity(), View.OnClickListener {
 
     private lateinit var binding: ActivityPlaceFormBinding
 
     //initializing our database
     private lateinit var database: PlacesDatabase
+    private var mPlaceDetails: PlaceModel? = null
 
     //Properties of our place object
     private lateinit var title: String
     private lateinit var date: String
     private var latitude: Double = 0.00
     private var longitude: Double = 0.00
-    private lateinit var address: String
-    private lateinit var category: String
+    private var address: String = ""
+    private var category: String = ""
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,7 +52,28 @@ class PlaceFormActivity : AppCompatActivity() {
         //Getting instance of the database
         database = PlacesDatabase.getInstance(applicationContext)
 
-        //if the intent is coming from the draggable marker
+        //intent from edit item
+        if (intent.hasExtra(MainActivity.EXTRA_PLACE_DETAILS)) {
+            mPlaceDetails =
+                intent.getSerializableExtra(MainActivity.EXTRA_PLACE_DETAILS) as PlaceModel
+        }
+        //set the views if edit is asked
+        if (mPlaceDetails != null) {
+            supportActionBar?.title = "Edit Happy Place"
+
+            binding.tvTitle.setText(mPlaceDetails!!.title)
+            binding.tvCategory.text = mPlaceDetails!!.category
+            binding.date.text = mPlaceDetails!!.date
+            binding.tvAddress.text = mPlaceDetails!!.address
+
+            latitude = mPlaceDetails!!.latitude
+            longitude = mPlaceDetails!!.longitude
+
+
+        }
+
+
+//        if the intent is coming from the draggable marker
         if (intent.hasExtra("DRAG_LATITUDE") && intent.hasExtra("DRAG_LONGITUDE") &&
             intent.hasExtra("DRAG_ADDRESS")
         ) {
@@ -94,55 +119,65 @@ class PlaceFormActivity : AppCompatActivity() {
                 }
             }
         }
+        binding.btnAdd.setOnClickListener(this)
 
-        //Handling date text View
-        binding.date.setOnClickListener {
-            showDatePickerDialog()
-        }
 
         //Adding the place to the database
-        binding.btnAdd.setOnClickListener {
 
-            //fields validation
-            if (binding.tvTitle.text.isEmpty() || category.isEmpty() ||
-                binding.tvAddress.text.isEmpty()
-            ) {
-                Toast.makeText(
-                    this, "Fields cannot be Empty",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@setOnClickListener
-            }
-
-            title = binding.tvTitle.text.toString()
-            date = binding.date.text.toString()
-
-            val placeObj = PlaceModel(
-                0,
-                title,
-                category,
-                date,
-                address,
-                latitude,
-                longitude
-            )
-
-            //Creating coroutine scope to perform an DB Operation
-            GlobalScope.launch {
-                database.contactDao().insertPlace(placeObj)
-            }
-
-            Toast.makeText(
-                this, "Place Inserted",
-                Toast.LENGTH_SHORT
-            ).show()
-
-            Intent(this, MainActivity::class.java).also {
-                startActivity(it)
-            }
-        }
 
     }
+
+    override fun onClick(v: View?) {
+        when (v!!.id) {
+            R.id.date -> {
+                showDatePickerDialog()
+            }
+
+            R.id.btn_add -> {
+                //fields validation
+                if (binding.tvTitle.text.isEmpty() || category.isEmpty() ||
+                    binding.tvAddress.text.isEmpty()
+                ) {
+                    Toast.makeText(
+                        this, "Fields cannot be Empty",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    return
+                }
+
+                val placeObj = PlaceModel(
+                    0,
+                    binding.tvTitle.text.toString(),
+                    category,
+                    binding.date.text.toString(),
+                    address,
+                    latitude,
+                    longitude
+                )
+
+                //Creating coroutine scope to perform an DB Operation
+                //if new place is added
+                if (mPlaceDetails == null) {
+                    GlobalScope.launch {
+                        database.contactDao().insertPlace(placeObj)
+
+                    }
+
+                    Toast.makeText(this, "Place Inserted",Toast.LENGTH_SHORT).show()
+                } else {//if edit is asked
+                    GlobalScope.launch {
+                        database.contactDao().updatePlace(placeObj)
+
+                    }
+                }
+                Intent(this, MainActivity::class.java).also {
+                    startActivity(it)
+                }
+            }
+
+        }
+    }
+
 
     //for getting the current date
     private fun getCurrentDate(): String {

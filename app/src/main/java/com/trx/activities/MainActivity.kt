@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -38,6 +39,7 @@ class MainActivity : AppCompatActivity() {
         //Instantiating the Database
         database = PlacesDatabase.getInstance(applicationContext)
 
+        getHappyPlacesListFromLocalDB()
         //Getting all the places
         placesList = database.contactDao().getPlaces()
         //Getting list of all the places
@@ -82,24 +84,25 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+
     }
 
     private fun getHappyPlacesListFromLocalDB() {
-        database = Room.databaseBuilder(
-            applicationContext,
-            PlacesDatabase::class.java,
-            "Places_DB"
-        ).build()
+
         val getPlacesList = database.contactDao().getPlaces()
 
-        if (getPlacesList != null) {
-            binding.placesList.visibility = View.VISIBLE
-            binding.tvDefaultPlace.visibility = View.GONE
-            setupHappyPlacesRecyclerView(getPlacesList)
-        } else {
-            binding.placesList.visibility = View.GONE
-            binding.tvDefaultPlace.visibility = View.VISIBLE
-        }
+        getPlacesList.observe(this@MainActivity, Observer {
+            if(!it.isNullOrEmpty()){
+                binding.placesList.visibility = View.VISIBLE
+                binding.tvDefaultPlace.visibility = View.GONE
+                setupHappyPlacesRecyclerView(it as ArrayList<PlaceModel>?)
+            }else {
+                binding.placesList.visibility = View.GONE
+                binding.tvDefaultPlace.visibility = View.VISIBLE
+            }
+
+        })
+
     }
 
     companion object {
@@ -107,11 +110,11 @@ class MainActivity : AppCompatActivity() {
         internal const val EXTRA_PLACE_DETAILS = "extra_place_details"
     }
 
-    private fun setupHappyPlacesRecyclerView(happyPlacesList: LiveData<List<PlaceModel>>?) {
+    private fun setupHappyPlacesRecyclerView(happyPlacesList: ArrayList<PlaceModel>?) {
         binding.placesList.layoutManager = LinearLayoutManager(this)
         binding.placesList.setHasFixedSize(true)
 
-        val placesAdapter = MainViewAdapter(this, fusedLocationClient, happyPlacesList)
+        val placesAdapter = MainViewAdapter(this, fusedLocationClient, happyPlacesList!!)
         fusedLocationClient?.let { placesAdapter.setCurrentLocation(it) }
         binding.placesList.adapter = placesAdapter
 
