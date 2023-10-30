@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
+import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -73,9 +74,11 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnViewMap.setOnClickListener {
             Intent(this, MapActivity::class.java)
-                .putExtra("VIEW", "VIEW_MAP").also {
+                .putExtra("All Marker", "viewMap").also {
                     startActivity(it)
+
                 }
+
         }
 
         binding.btnAddPlace.setOnClickListener {

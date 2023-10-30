@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.LiveData
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -24,7 +25,9 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 import com.trx.R
+import com.trx.database.PlacesDatabase
 import com.trx.databinding.ActivityMapBinding
+import com.trx.models.PlaceModel
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
     //OnMapReadyCallback interface for implementing google maps
@@ -34,27 +37,39 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
     private var mGoogleMap: GoogleMap? = null      //for initializing google map
     private lateinit var autoCompleteFragment: AutocompleteSupportFragment  //auto complete search
 
+    private var markerList: LiveData<List<PlaceModel>>? = null
+    private lateinit var database : PlacesDatabase
+    private var viewMap:Boolean = false
+
     //Current location
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         binding = ActivityMapBinding.inflate(layoutInflater)
         setContentView(binding?.root)
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
-
-        //<----------For adding Google Map---------->
-        // can use id with view binding like this
-        val mapFragment = supportFragmentManager.findFragmentById(binding?.mapFragment!!.id)
-                as SupportMapFragment
-        mapFragment.getMapAsync(this)
-        //<----------end----------------------------->
+        //Instantiating the Database
+        database = PlacesDatabase.getInstance(applicationContext)
+        if (intent.hasExtra("All Marker")) {
+            viewMap = true
+            markerList = database.contactDao().getPlaces()
+        }
+        if(viewMap){
+            //<----------For adding Google Map---------->
+            // can use id with view binding like this
+            val mapFragment = supportFragmentManager.findFragmentById(binding?.mapFragment!!.id)
+                    as SupportMapFragment
+            mapFragment.getMapAsync(this)
+            //<----------end----------------------------->
+        }
 
 
         // <----------Google Autocomplete search from places API------------->
         Places.initialize(applicationContext, getString(R.string.google_maps_api_key))
+
         //normal use of layout id
         autoCompleteFragment = supportFragmentManager.findFragmentById(R.id.autocomplete_fragment)
                 as AutocompleteSupportFragment
@@ -98,6 +113,13 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         //for zoom on current location
         mGoogleMap?.uiSettings?.isZoomControlsEnabled = true
         setupMap()
+
+        if(markerList!=null){
+            for(places in markerList!!){
+                val position = LatLng(places.latitude,places.longitude)
+                placeMarkerOnMap(position)
+            }
+        }
 
         //functions of draggable marker
         googleMap.setOnMarkerDragListener(object : GoogleMap.OnMarkerDragListener {
@@ -143,7 +165,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
             if (location != null) {
                 val currentLatLang = LatLng(location.latitude, location.longitude)
-                if(intent.hasExtra("ADD")) placeMarkerOnMap(currentLatLang)
+                if (intent.hasExtra("ADD")) placeMarkerOnMap(currentLatLang)
                 mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLang, 15f))
             }
         }
@@ -153,7 +175,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
     private fun placeMarkerOnMap(position: LatLng) {
         val marker = MarkerOptions().position(position)
         marker.title("Drag me to select a location")
-        marker.draggable(true)
         mGoogleMap?.addMarker(marker)
     }
 
