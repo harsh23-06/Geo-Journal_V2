@@ -14,6 +14,7 @@ import com.trx.database.PlacesDatabase
 import com.trx.databinding.ActivityPlaceFormBinding
 import com.trx.models.PlaceModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -70,12 +71,10 @@ class PlaceFormActivity : AppCompatActivity(), View.OnClickListener {
 
             latitude = mPlaceDetails!!.latitude
             longitude = mPlaceDetails!!.longitude
-
-
         }
 
 
-//        if the intent is coming from the draggable marker
+        //if the intent is coming from the draggable marker
         if (intent.hasExtra("DRAG_LATITUDE") && intent.hasExtra("DRAG_LONGITUDE") &&
             intent.hasExtra("DRAG_ADDRESS")
         ) {
@@ -121,25 +120,23 @@ class PlaceFormActivity : AppCompatActivity(), View.OnClickListener {
                 }
             }
         }
-        binding.btnAdd.setOnClickListener(this)
 
         //Handling date text View
-        binding.btnCalendar.setOnClickListener {
-            showDatePickerDialog()
-        }
-
-        //Adding the place to the database
-        binding.btnAdd.setOnClickListener {
+        binding.btnCalendar.setOnClickListener(this)
+        //Handling the add button
+        binding.btnAdd.setOnClickListener(this)
 
     }
 
     override fun onClick(v: View?) {
+
         when (v!!.id) {
-            R.id.date -> {
+
+            binding.date.id -> {
                 showDatePickerDialog()
             }
 
-            R.id.btn_add -> {
+            binding.btnAdd.id -> {
                 //fields validation
                 if (binding.tvTitle.text.isEmpty() || category.isEmpty() ||
                     binding.tvAddress.text.isEmpty()
@@ -161,45 +158,48 @@ class PlaceFormActivity : AppCompatActivity(), View.OnClickListener {
                     longitude
                 )
 
-            //Creating coroutine scope to perform an DB Operation (using lifecycleScope instead of GlobalScope)
-            lifecycleScope.launch {
-                withContext(Dispatchers.IO) {
-                    database.contactDao().insertPlace(placeObj)
-                }
-                Toast.makeText(
-                    this@PlaceFormActivity, "Place Inserted",
-                    Toast.LENGTH_SHORT
-                ).show()
-                //Creating coroutine scope to perform an DB Operation
+                //Creating coroutine scope to perform an DB Operation (using lifecycleScope instead of GlobalScope)
                 //if new place is added
                 if (mPlaceDetails == null) {
-                    GlobalScope.launch {
-                        database.contactDao().insertPlace(placeObj)
+                    lifecycleScope.launch {
+                        withContext(Dispatchers.IO) {
+                            database.contactDao().insertPlace(placeObj)
+                        }
+                        Toast.makeText(
+                            this@PlaceFormActivity, "Place Inserted",
+                            Toast.LENGTH_SHORT
+                        ).show()
 
                     }
-
-                    Toast.makeText(this, "Place Inserted",Toast.LENGTH_SHORT).show()
-                } else {//if edit is asked
-                    GlobalScope.launch {
-                        database.contactDao().updatePlace(placeObj)
-
+                }
+                //if edit is asked
+                else {
+                    lifecycleScope.launch {
+                        withContext(Dispatchers.IO) {
+                            database.contactDao().updatePlace(placeObj)
+                        }
+                    }
+                }
+                //this will activate after pressing add button
                 Intent(
                     this@PlaceFormActivity,
                     MainActivity::class.java
                 ).also {
                     //We are using flags in intent to clear the back stack of activities
-                    it.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    it.flags =
+                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                     startActivity(it)
                 }
+                //finish() Instead of it we have used flags in our intent
             }
-            //finish() Instead of it we have used flags in our intent
         }
     }
 
+
     //Handling back Button on toolbar
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId) {
-            android.R.id.home ->{
+        when (item.itemId) {
+            android.R.id.home -> {
                 onBackPressedDispatcher.onBackPressed()
             }
         }
@@ -245,6 +245,5 @@ class PlaceFormActivity : AppCompatActivity(), View.OnClickListener {
 
         binding.date.text = "Date : $formattedDate"
     }
-
 
 }

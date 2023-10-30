@@ -40,16 +40,17 @@ class MainActivity : AppCompatActivity() {
         //Instantiating the Database
         database = PlacesDatabase.getInstance(applicationContext)
 
-        getHappyPlacesListFromLocalDB()
         //Getting all the places
-        placesList = database.contactDao().getPlaces()
-        //Getting list of all the places
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        getHappyPlacesListFromLocalDB()
+
         //placesList = database.contactDao().getPlaces()
+
+        //for Getting current location
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         //Handling the Spinner
         binding.spDistance.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
-            val distanceArray = resources.getStringArray(R.array.Distance_Filter)
+            val distanceArray = resources.getStringArray(R.array.Distances_Filter)
             override fun onItemSelected(adapterView: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val selectedDistance = distanceArray[position]
 
@@ -84,6 +85,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    //for getting all the places from the database
     private fun getHappyPlacesListFromLocalDB() {
 
         val getPlacesList = database.contactDao().getPlaces()
@@ -107,6 +109,7 @@ class MainActivity : AppCompatActivity() {
         internal const val EXTRA_PLACE_DETAILS = "extra_place_details"
     }
 
+    //Function to setup the recycler View
     private fun setupHappyPlacesRecyclerView(happyPlacesList: ArrayList<PlaceModel>?) {
         binding.placesList.layoutManager = LinearLayoutManager(this)
         binding.placesList.setHasFixedSize(true)
@@ -118,7 +121,7 @@ class MainActivity : AppCompatActivity() {
         placesAdapter.setOnClickListener(object :
             MainViewAdapter.OnClickListener {
             override fun onClick(position: Int, model: PlaceModel) {
-                val intent = Intent(this@MainActivity, HappyPlaceDetailActivity::class.java)
+                val intent = Intent(this@MainActivity, PlaceDetailActivity::class.java)
                 intent.putExtra(
                     EXTRA_PLACE_DETAILS,
                     model
@@ -128,6 +131,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+        //Swipe To edit
         val editSwipeHandler = object : SwipeToEditCallback(this) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val adapter = binding.placesList.adapter as MainViewAdapter
@@ -141,11 +145,11 @@ class MainActivity : AppCompatActivity() {
         val editItemTouchHelper = ItemTouchHelper(editSwipeHandler)
         editItemTouchHelper.attachToRecyclerView(binding.placesList)
 
+        //Swipe to Delete
         val deleteSwipeHandler = object : SwipeToDeleteCallback(this) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val adapter = binding.placesList.adapter as MainViewAdapter
                 adapter.removeAt(viewHolder.adapterPosition)
-
                 getHappyPlacesListFromLocalDB() // Gets the latest list from the local database after item being delete from it.
             }
         }
@@ -153,6 +157,8 @@ class MainActivity : AppCompatActivity() {
         val deleteItemTouchHelper = ItemTouchHelper(deleteSwipeHandler)
         deleteItemTouchHelper.attachToRecyclerView(binding.placesList)
     }
+
+    //To filter the places according to the distance
     private fun calculateDistance(
         lat1: Double,
         lon1: Double,

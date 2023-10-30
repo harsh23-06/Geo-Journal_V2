@@ -14,4 +14,5 @@
 
     <color name="detail_screen_description_text_color">#757575</color>
     <color name="button">#2c8c99</color>
+    <color name="location">#89CFF0</color>
 </resources>

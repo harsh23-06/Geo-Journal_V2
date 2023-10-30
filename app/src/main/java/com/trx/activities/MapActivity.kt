@@ -3,6 +3,8 @@ package com.trx.activities
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.location.Geocoder
 import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
@@ -16,6 +18,8 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
@@ -167,9 +171,14 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
     }
 
     private fun placeMarkerOnMap(position: LatLng) {
+
+        val customDraggable = BitmapFactory.decodeResource(resources,R.drawable.img_custom_marker)
+        val resizedDraggable = Bitmap.createScaledBitmap(customDraggable,130,130,false)
+
         val marker = MarkerOptions().position(position)
         marker.title("Drag me to select a location")
         marker.draggable(true)
+        marker.icon(BitmapDescriptorFactory.fromBitmap(resizedDraggable))
         mGoogleMap?.addMarker(marker)
     }
 
