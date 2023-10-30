@@ -17,8 +17,8 @@ import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.LatLng
-import com.trx.activities.HappyPlaceDetailActivity
 import com.trx.activities.MainActivity
+import com.trx.activities.PlaceDetailActivity
 import com.trx.activities.PlaceFormActivity
 import com.trx.database.PlacesDatabase
 import kotlinx.coroutines.CoroutineScope
@@ -78,7 +78,7 @@ class MainViewAdapter(
 
             holder.itemView.setOnClickListener {
 
-                val intent = Intent(context, HappyPlaceDetailActivity::class.java)
+                val intent = Intent(context, PlaceDetailActivity::class.java)
                 intent.putExtra("MainActivityIntent", model)
                 // Passing the complete serializable data class to the detail activity using intent.
                 intent.putExtra("SelectedDescription", model.category)

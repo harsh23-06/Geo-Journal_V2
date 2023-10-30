@@ -4,6 +4,7 @@ import android.app.DatePickerDialog
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.MenuItem
 import android.view.View
 import android.widget.DatePicker
 import android.widget.Toast
@@ -12,8 +13,10 @@ import com.trx.R
 import com.trx.database.PlacesDatabase
 import com.trx.databinding.ActivityPlaceFormBinding
 import com.trx.models.PlaceModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -41,7 +44,7 @@ class PlaceFormActivity : AppCompatActivity(), View.OnClickListener {
         setContentView(binding.root)
 
         //setting up toolbar
-        setSupportActionBar(binding.pfToolbar)
+        setSupportActionBar(binding.toolbar.customToolbar)
         supportActionBar?.title = "Add place"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
@@ -69,12 +72,10 @@ class PlaceFormActivity : AppCompatActivity(), View.OnClickListener {
 
             latitude = mPlaceDetails!!.latitude
             longitude = mPlaceDetails!!.longitude
-
-
         }
 
 
-//        if the intent is coming from the draggable marker
+        //if the intent is coming from the draggable marker
         if (intent.hasExtra("DRAG_LATITUDE") && intent.hasExtra("DRAG_LONGITUDE") &&
             intent.hasExtra("DRAG_ADDRESS")
         ) {
@@ -120,21 +121,23 @@ class PlaceFormActivity : AppCompatActivity(), View.OnClickListener {
                 }
             }
         }
+
+        //Handling date text View
+        binding.btnCalendar.setOnClickListener(this)
+        //Handling the add button
         binding.btnAdd.setOnClickListener(this)
-
-
-        //Adding the place to the database
-
 
     }
 
     override fun onClick(v: View?) {
+
         when (v!!.id) {
-            R.id.date -> {
+
+            binding.btnCalendar.id -> {
                 showDatePickerDialog()
             }
 
-            R.id.btn_add -> {
+            binding.btnAdd.id -> {
                 //fields validation
                 if (binding.tvTitle.text.isEmpty() || category.isEmpty() ||
                     binding.tvAddress.text.isEmpty()
@@ -156,29 +159,53 @@ class PlaceFormActivity : AppCompatActivity(), View.OnClickListener {
                     longitude
                 )
 
-                //Creating coroutine scope to perform an DB Operation
+                //Creating coroutine scope to perform an DB Operation (using lifecycleScope instead of GlobalScope)
                 //if new place is added
                 if (mPlaceDetails == null) {
-                    GlobalScope.launch {
-                        database.contactDao().insertPlace(placeObj)
-
-                    }
-
-                    Toast.makeText(this, "Place Inserted",Toast.LENGTH_SHORT).show()
-                } else {//if edit is asked
-                    GlobalScope.launch {
-                        database.contactDao().updatePlace(placeObj)
+                    lifecycleScope.launch {
+                        withContext(Dispatchers.IO) {
+                            database.contactDao().insertPlace(placeObj)
+                        }
+                        Toast.makeText(
+                            this@PlaceFormActivity, "Place Inserted",
+                            Toast.LENGTH_SHORT
+                        ).show()
 
                     }
                 }
-                Intent(this, MainActivity::class.java).also {
+                //if edit is asked
+                else {
+                    lifecycleScope.launch {
+                        withContext(Dispatchers.IO) {
+                            database.contactDao().updatePlace(placeObj)
+                        }
+                    }
+                }
+                //this will activate after pressing add button
+                Intent(
+                    this@PlaceFormActivity,
+                    MainActivity::class.java
+                ).also {
+                    //We are using flags in intent to clear the back stack of activities
+                    it.flags =
+                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                     startActivity(it)
                 }
+                //finish() Instead of it we have used flags in our intent
             }
-
         }
     }
 
+
+    //Handling back Button on toolbar
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> {
+                onBackPressedDispatcher.onBackPressed()
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
 
     //for getting the current date
     private fun getCurrentDate(): String {
@@ -219,6 +246,5 @@ class PlaceFormActivity : AppCompatActivity(), View.OnClickListener {
 
         binding.date.text = "Date : $formattedDate"
     }
-
 
 }

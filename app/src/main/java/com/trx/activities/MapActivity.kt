@@ -3,8 +3,9 @@ package com.trx.activities
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.location.Geocoder
-import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
@@ -17,6 +18,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
@@ -69,7 +71,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
         // <----------Google Autocomplete search from places API------------->
         Places.initialize(applicationContext, getString(R.string.google_maps_api_key))
-
         //normal use of layout id
         autoCompleteFragment = supportFragmentManager.findFragmentById(R.id.autocomplete_fragment)
                 as AutocompleteSupportFragment
@@ -82,7 +83,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         autoCompleteFragment.setOnPlaceSelectedListener(object : PlaceSelectionListener {
             override fun onError(place: Status) {
                 Toast.makeText(
-                    this@MapActivity, "Some Error in Search",
+                    this@MapActivity, "Cannot Fetch Location",
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -150,6 +151,13 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
     private fun setupMap() {
 
+        val requestCode = 69
+
+        val permissions = arrayOf(
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        )
+
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -167,14 +175,38 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
                 val currentLatLang = LatLng(location.latitude, location.longitude)
                 if (intent.hasExtra("ADD")) placeMarkerOnMap(currentLatLang)
                 mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLang, 15f))
+            ActivityCompat.requestPermissions(this, permissions, requestCode)
+            setupMap()
+        } else {
+            mGoogleMap?.isMyLocationEnabled = true
+            fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
+                if (location != null) {
+                    val currentLatLang = LatLng(location.latitude, location.longitude)
+                    if (intent.hasExtra("ADD")) placeMarkerOnMap(currentLatLang)
+                    mGoogleMap?.animateCamera(
+                        CameraUpdateFactory.newLatLngZoom(
+                            currentLatLang,
+                            15f
+                        )
+                    )
+                } else {
+                    Toast.makeText(this, "Cannot fetch current place",
+                        Toast.LENGTH_SHORT).show()
+                }
             }
         }
 
     }
 
     private fun placeMarkerOnMap(position: LatLng) {
+
+        val customDraggable = BitmapFactory.decodeResource(resources,R.drawable.img_custom_marker)
+        val resizedDraggable = Bitmap.createScaledBitmap(customDraggable,130,130,false)
+
         val marker = MarkerOptions().position(position)
         marker.title("Drag me to select a location")
+        marker.draggable(true)
+        marker.icon(BitmapDescriptorFactory.fromBitmap(resizedDraggable))
         mGoogleMap?.addMarker(marker)
     }
 
