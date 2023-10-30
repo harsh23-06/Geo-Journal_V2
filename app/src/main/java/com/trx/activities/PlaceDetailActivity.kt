@@ -10,7 +10,6 @@ import com.trx.R
 import com.trx.databinding.ActivityPlaceDetailBinding
 import com.trx.models.PlaceModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.IOException
@@ -61,7 +60,7 @@ class PlaceDetailActivity : AppCompatActivity() {
                 "&markers=color:red%7C$latitude,$longitude" +
                 "&key=${getString(R.string.google_maps_api_key)}"
 
-        lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch {
             withContext(Dispatchers.IO) {
                 try {
                     val inputStream: InputStream = URL(staticMapUrl).openStream()

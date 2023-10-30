@@ -132,7 +132,7 @@ class PlaceFormActivity : AppCompatActivity(), View.OnClickListener {
 
         when (v!!.id) {
 
-            binding.date.id -> {
+            binding.btnCalendar.id -> {
                 showDatePickerDialog()
             }
 

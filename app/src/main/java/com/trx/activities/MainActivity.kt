@@ -26,10 +26,10 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-    private var placesList : LiveData<List<PlaceModel>>? = null     //List of Places
-
+    //for current location
     private var fusedLocationClient: FusedLocationProviderClient? = null
 
+    //initializing Database
     private lateinit var database : PlacesDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,8 +42,6 @@ class MainActivity : AppCompatActivity() {
 
         //Getting all the places
         getHappyPlacesListFromLocalDB()
-
-        //placesList = database.contactDao().getPlaces()
 
         //for Getting current location
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
