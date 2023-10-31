@@ -5,8 +5,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -56,7 +54,24 @@ class MainActivity : AppCompatActivity() {
                     "All" -> {
 
                     }
+                    "500m" -> {
 
+                    }
+                    "1km" -> {
+
+                    }
+                    "1.5km" -> {
+
+                    }
+                    "2km" -> {
+
+                    }
+                    "2.5km" -> {
+
+                    }
+                    "3km" -> {
+
+                    }
                 }
 
             }
@@ -88,17 +103,16 @@ class MainActivity : AppCompatActivity() {
 
         val getPlacesList = database.contactDao().getPlaces()
 
-        getPlacesList.observe(this@MainActivity, Observer {
-            if(!it.isNullOrEmpty()){
+        getPlacesList.observe(this@MainActivity) {
+            if (!it.isNullOrEmpty()) {
                 binding.placesList.visibility = View.VISIBLE
                 binding.tvDefaultPlace.visibility = View.GONE
                 setupHappyPlacesRecyclerView(it as ArrayList<PlaceModel>?)
-            }else {
+            } else {
                 binding.placesList.visibility = View.GONE
                 binding.tvDefaultPlace.visibility = View.VISIBLE
             }
-
-        })
+        }
 
     }
 
