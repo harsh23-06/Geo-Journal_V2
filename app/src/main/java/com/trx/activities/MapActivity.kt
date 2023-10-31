@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.LiveData
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -40,14 +41,14 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
     private lateinit var autoCompleteFragment: AutocompleteSupportFragment  //auto complete search
 
     private var markerList: LiveData<List<PlaceModel>>? = null
-    private lateinit var database : PlacesDatabase
-    private var viewMap:Boolean = false
+    private lateinit var database: PlacesDatabase
+    private var viewMap: Boolean = false
 
     //Current location
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
 
-    override fun onCreate(savedInstanceState: Bundle?){
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMapBinding.inflate(layoutInflater)
         setContentView(binding?.root)
@@ -55,11 +56,11 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
         //Instantiating the Database
         database = PlacesDatabase.getInstance(applicationContext)
-        if (intent.hasExtra("All Marker")) {
+        if (intent.hasExtra("AllMarker")) {
             viewMap = true
             markerList = database.contactDao().getPlaces()
         }
-        if(viewMap){
+        if (viewMap) {
             //<----------For adding Google Map---------->
             // can use id with view binding like this
             val mapFragment = supportFragmentManager.findFragmentById(binding?.mapFragment!!.id)
@@ -115,11 +116,20 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         mGoogleMap?.uiSettings?.isZoomControlsEnabled = true
         setupMap()
 
-        if(markerList!=null){
-            for(places in markerList!!){
-                val position = LatLng(places.latitude,places.longitude)
-                placeMarkerOnMap(position)
+
+        markerList!!.observe(this) { places ->
+            for (i in places.indices!!) {
+                val position = LatLng(places[i].latitude, places[i].longitude)
+                googleMap.addMarker(
+                    MarkerOptions()
+                        .position(position)
+                        .title("fff")
+                )
+
+
             }
+
+
         }
 
         //functions of draggable marker
@@ -166,15 +176,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            //TODO : Have to request permission from user
-            return
-        }
-        mGoogleMap?.isMyLocationEnabled = true
-        fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
-            if (location != null) {
-                val currentLatLang = LatLng(location.latitude, location.longitude)
-                if (intent.hasExtra("ADD")) placeMarkerOnMap(currentLatLang)
-                mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLang, 15f))
             ActivityCompat.requestPermissions(this, permissions, requestCode)
             setupMap()
         } else {
@@ -195,13 +196,14 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
                 }
             }
         }
-
     }
+
 
     private fun placeMarkerOnMap(position: LatLng) {
 
-        val customDraggable = BitmapFactory.decodeResource(resources,R.drawable.img_custom_marker)
-        val resizedDraggable = Bitmap.createScaledBitmap(customDraggable,130,130,false)
+        val customDraggable =
+            BitmapFactory.decodeResource(resources, R.drawable.img_custom_marker)
+        val resizedDraggable = Bitmap.createScaledBitmap(customDraggable, 130, 130, false)
 
         val marker = MarkerOptions().position(position)
         marker.title("Drag me to select a location")

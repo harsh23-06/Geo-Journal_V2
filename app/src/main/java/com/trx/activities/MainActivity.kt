@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity() {
         //Handling the View Map button
         binding.btnViewMap.setOnClickListener {
             Intent(this,MapActivity::class.java)
-                .putExtra("VIEW","VIEW_MAP").also{
+                .putExtra("AllMarker","VIEW_MAP").also{
                 startActivity(it)
             }
         }
@@ -78,7 +78,7 @@ class MainActivity : AppCompatActivity() {
         //Handling the ADD Button
         binding.btnAddPlace.setOnClickListener{
             Intent(this,MapActivity::class.java).also {
-                it.putExtra("ADD","ADDON_MAP")
+                it.putExtra("AD      D","ADDON_MAP")
                 startActivity(it)
             }
         }
