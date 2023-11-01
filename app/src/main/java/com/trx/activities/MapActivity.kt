@@ -185,12 +185,12 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         ) {
             ActivityCompat.requestPermissions(this, permissions, requestCode)
 
-        } else {
+        }
             nGoogleMap?.isMyLocationEnabled = true
             fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
                 if (location != null) {
                     val currentLatLang = LatLng(location.latitude, location.longitude)
-                    if (intent.hasExtra("ADD")) placeMarkerOnMap(currentLatLang)
+//                    if (intent.hasExtra("ADD")) placeMarkerOnMap(currentLatLang)
                     nGoogleMap?.animateCamera(
                         CameraUpdateFactory.newLatLngZoom(
                             currentLatLang,
@@ -272,7 +272,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
 
             }
-        }
+
     }
 
 
