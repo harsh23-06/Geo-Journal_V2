@@ -62,8 +62,9 @@ class PlaceFormActivity : AppCompatActivity(), View.OnClickListener {
         }
         //set the views if edit is asked
         if (mPlaceDetails != null) {
-            supportActionBar?.title = "Edit Place"
 
+            //set the views if edit is asked
+            supportActionBar?.title = "Edit Place"
 
             binding.tvTitle.setText(mPlaceDetails!!.title)
             binding.tvCategory.text = mPlaceDetails!!.category
@@ -133,10 +134,12 @@ class PlaceFormActivity : AppCompatActivity(), View.OnClickListener {
 
         when (v!!.id) {
 
+            //Calendar Button
             binding.btnCalendar.id -> {
                 showDatePickerDialog()
             }
 
+            //Add Button
             binding.btnAdd.id -> {
                 //fields validation
                 if (binding.tvTitle.text.isEmpty() || category.isEmpty() ||

@@ -3,6 +3,7 @@ package com.trx.adapters
 import com.trx.R
 import com.trx.models.PlaceModel
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -13,7 +14,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.LatLng
@@ -35,6 +35,8 @@ class MainViewAdapter(
 
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+
     private var currentLocation: LatLng? = null
     private var onClickListener: OnClickListener? = null
     private lateinit var database: PlacesDatabase
@@ -49,6 +51,14 @@ class MainViewAdapter(
             )
         )
     }
+
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun dataList(list:ArrayList<PlaceModel>){
+        this.list= list
+        notifyDataSetChanged()
+    }
+
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val model = list[position]
@@ -148,7 +158,6 @@ class MainViewAdapter(
         ) {
             return
         }
-
         fusedLocationClient?.lastLocation?.addOnSuccessListener { location ->
             location?.let {
                 currentLocation = LatLng(it.latitude, it.longitude)

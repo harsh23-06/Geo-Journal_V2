@@ -20,19 +20,22 @@
             android:id="@+id/chipAll"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="All"
-            />
+            android:checked="true"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:text="All" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipResidential"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
             android:text="Residential" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipCommercial"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
             android:text="Commercial" />
 
     </com.google.android.material.chip.ChipGroup>
