@@ -102,12 +102,11 @@ class MainViewAdapter(
     fun notifyEditItem(activity: Activity, position: Int, requestCode: Int) {
         val intent = Intent(context, PlaceFormActivity::class.java)
         intent.putExtra(MainActivity.EXTRA_PLACE_DETAILS, list[position])
-        activity.startActivityForResult(
-            intent,
-            requestCode
+        activity.startActivity(
+            intent
         ) // Activity is started with requestCode
 
-        notifyItemChanged(position) // Notify any registered observers that the item at position has changed.
+//        notifyItemChanged(position) // Notify any registered observers that the item at position has changed.
     }
 
     /**

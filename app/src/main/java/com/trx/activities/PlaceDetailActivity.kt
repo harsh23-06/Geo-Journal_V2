@@ -1,5 +1,6 @@
 package com.trx.activities
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.appcompat.app.AppCompatActivity
@@ -42,6 +43,11 @@ class PlaceDetailActivity : AppCompatActivity() {
 
         binding.category.text = detailPlaceModel!!.category
         binding.location.text = detailPlaceModel!!.address
+        binding.btnViewOnMap.setOnClickListener {
+            val intent = Intent(this@PlaceDetailActivity,MapActivity::class.java)
+            intent.putExtra("Item",detailPlaceModel)
+            startActivity(intent)
+        }
 
     }
 

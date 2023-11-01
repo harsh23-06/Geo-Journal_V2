@@ -62,7 +62,7 @@ class PlaceFormActivity : AppCompatActivity(), View.OnClickListener {
         }
         //set the views if edit is asked
         if (mPlaceDetails != null) {
-            supportActionBar?.title = "Edit Happy Place"
+            supportActionBar?.title = "Edit Place"
 
 
             binding.tvTitle.setText(mPlaceDetails!!.title)
@@ -150,11 +150,11 @@ class PlaceFormActivity : AppCompatActivity(), View.OnClickListener {
                 }
 
                 val placeObj = PlaceModel(
-                    0,
+                    mPlaceDetails?.id ?: 0,
                     binding.tvTitle.text.toString(),
                     category,
                     binding.date.text.toString(),
-                    address,
+                    address   ,
                     latitude,
                     longitude
                 )
@@ -179,6 +179,7 @@ class PlaceFormActivity : AppCompatActivity(), View.OnClickListener {
                         withContext(Dispatchers.IO) {
                             database.contactDao().updatePlace(placeObj)
                         }
+
                     }
                 }
                 //this will activate after pressing add button

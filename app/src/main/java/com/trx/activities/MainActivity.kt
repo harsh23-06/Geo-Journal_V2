@@ -30,13 +30,13 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var binding: ActivityMainBinding
     private var distance: Double? = null
     private var mPlacesList: LiveData<List<PlaceModel>>? = null
-    private var selectedDistance: String = "All" // Default value is "All"
+    private lateinit var selectedDistance: String
 
     //for current location
     private val filteredMarkers: ArrayList<PlaceModel> = ArrayList()
 
     private var fusedLocationClient: FusedLocationProviderClient? = null
-    private var selectedFilter = "all"
+    private lateinit var selectedFilter : String
 
     //initializing Database
     private lateinit var database: PlacesDatabase
@@ -51,13 +51,13 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         database = PlacesDatabase.getInstance(applicationContext)
         mPlacesList = database.contactDao().getPlaces()
         //Getting all the places
-        getHappyPlacesListFromLocalDB()
+        getPlacesListFromLocalDB()
 
         //for Getting current location
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         //Handling the Spinner
-        binding.spDistance.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+        binding.spDistance.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             val distanceArray = resources.getStringArray(R.array.Distances_Filter)
 
             override fun onItemSelected(
@@ -71,7 +71,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
-                TODO("Not yet implemented")
             }
 
         }
@@ -89,19 +88,19 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
         when (v!!.id) {
             R.id.chipAll -> {
-                selectedFilter = "all"
+                selectedFilter = "All"
                 filterList(selectedFilter)
 
             }
 
             R.id.chipCommercial -> {
-                selectedFilter = "Commercial"
-                filterList("Commercial")
+                selectedFilter = "COMMERCIAL"
+                filterList("COMMERCIAL")
             }
 
             R.id.chipResidential -> {
-                selectedFilter = "Residential"
-                filterList("Residential")
+                selectedFilter = "RESIDENTIAL"
+                filterList("RESIDENTIAL")
             }//Handling the ADD Button
             R.id.btn_addPlace -> {
                 Intent(this, MapActivity::class.java).also {
@@ -115,12 +114,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
                     selectedDistance = distanceArray[binding.spDistance.selectedItemPosition]
                     it.putExtra("AllMarker", "VIEW_MAP")
-                    it.putExtra("SelectedDistance",selectedDistance)
+                    it.putExtra("SelectedDistance", selectedDistance)
                     startActivity(it)
                 }
             }
         }
-
     }
 
     private fun filterList(status: String) {
@@ -130,7 +128,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             val newFilteredData = it.filter { item ->
                 item.category == status
             }
-            val sortedList = if (status == "all") {
+            val sortedList = if (status == "All") {
                 it.sortedBy { placeModel ->
                     calculateDistance(
                         currentLatLng.latitude,
@@ -163,35 +161,35 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private fun getRadiusFromSelectedDistance(selectedDistance: String): Double {
 
 
-                when (selectedDistance) {
-                    "All" -> {
-                        distance = Double.MAX_VALUE
-                    }
+        when (selectedDistance) {
+            "All" -> {
+                distance = Double.MAX_VALUE
+            }
 
-                    "500m" -> {
-                        distance = 500.0
-                    }
+            "500m" -> {
+                distance = 500.0
+            }
 
-                    "1km" -> {
-                        distance = 1000.0
-                    }
+            "1km" -> {
+                distance = 1000.0
+            }
 
-                    "1.5km" -> {
-                        distance = 1500.0
-                    }
+            "1.5km" -> {
+                distance = 1500.0
+            }
 
-                    "2km" -> {
-                        distance = 2000.0
-                    }
+            "2km" -> {
+                distance = 2000.0
+            }
 
-                    "2.5km" -> {
-                        distance = 2500.0
-                    }
+            "2.5km" -> {
+                distance = 2500.0
+            }
 
-                    "3km" -> {
-                        distance = 3000.0
-                    }
-                }
+            "3km" -> {
+                distance = 3000.0
+            }
+        }
 
 
 
@@ -235,7 +233,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     }
 
                     // Update the RecyclerView with the filtered markers
-                    setupHappyPlacesRecyclerView(filteredMarkers)
+                    setupPlacesRecyclerView(filteredMarkers)
                 } else {
                     // Handle the case where location is not available
                     // You can show an error message or use a default location
@@ -247,7 +245,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     //for getting all the places from the database
-    private fun getHappyPlacesListFromLocalDB() {
+    private fun getPlacesListFromLocalDB() {
 
         val getPlacesList = database.contactDao().getPlaces()
 
@@ -255,7 +253,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             if (!it.isNullOrEmpty()) {
                 binding.placesList.visibility = View.VISIBLE
                 binding.tvDefaultPlace.visibility = View.GONE
-                setupHappyPlacesRecyclerView(it as ArrayList<PlaceModel>?)
+                setupPlacesRecyclerView(it as ArrayList<PlaceModel>?)
             } else {
                 binding.placesList.visibility = View.GONE
                 binding.tvDefaultPlace.visibility = View.VISIBLE
@@ -287,7 +285,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     //Function to setup the recycler View
-    private fun setupHappyPlacesRecyclerView(happyPlacesList: ArrayList<PlaceModel>?) {
+    private fun setupPlacesRecyclerView(happyPlacesList: ArrayList<PlaceModel>?) {
         binding.placesList.layoutManager = LinearLayoutManager(this)
         binding.placesList.setHasFixedSize(true)
 
@@ -327,7 +325,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val adapter = binding.placesList.adapter as MainViewAdapter
                 adapter.removeAt(viewHolder.adapterPosition)
-                getHappyPlacesListFromLocalDB() // Gets the latest list from the local database after item being delete from it.
+                getPlacesListFromLocalDB() // Gets the latest list from the local database after item being delete from it.
             }
         }
 

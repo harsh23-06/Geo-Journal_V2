@@ -44,7 +44,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
     private var nGoogleMap: GoogleMap? = null      //for initializing google map
     private lateinit var autoCompleteFragment: AutocompleteSupportFragment  //auto complete search
     private var mGoogleMap: GoogleMap? = null
-
+    private var viewItem = false
     private var markerList: LiveData<List<PlaceModel>>? = null
     private lateinit var database: PlacesDatabase
     private var viewMap: Boolean = false
@@ -64,6 +64,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         if (intent.hasExtra("AllMarker")) {
             viewMap = true
             markerList = database.contactDao().getPlaces()
+        }
+        if(intent.hasExtra("Item")){
+            viewItem = true
         }
         if (viewMap) {
             //<----------For adding Google Map---------->
