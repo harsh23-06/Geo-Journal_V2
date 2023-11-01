@@ -3,6 +3,7 @@ package com.trx.adapters
 import com.trx.R
 import com.trx.models.PlaceModel
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -49,6 +50,14 @@ class MainViewAdapter(
             )
         )
     }
+
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun dataList(list:ArrayList<PlaceModel>){
+        this.list= list
+        notifyDataSetChanged()
+    }
+
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val model = list[position]

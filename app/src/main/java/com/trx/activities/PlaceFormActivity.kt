@@ -59,10 +59,8 @@ class PlaceFormActivity : AppCompatActivity(), View.OnClickListener {
         if (intent.hasExtra(MainActivity.EXTRA_PLACE_DETAILS)) {
             mPlaceDetails =
                 intent.getSerializableExtra(MainActivity.EXTRA_PLACE_DETAILS) as PlaceModel
-        }
-        //set the views if edit is asked
-        if (mPlaceDetails != null) {
-            supportActionBar?.title = "Edit Happy Place"
+            //set the views if edit is asked
+            supportActionBar?.title = "Edit Place"
 
             binding.tvTitle.setText(mPlaceDetails!!.title)
             binding.tvCategory.text = mPlaceDetails!!.category
@@ -132,10 +130,12 @@ class PlaceFormActivity : AppCompatActivity(), View.OnClickListener {
 
         when (v!!.id) {
 
+            //Calendar Button
             binding.btnCalendar.id -> {
                 showDatePickerDialog()
             }
 
+            //Add Button
             binding.btnAdd.id -> {
                 //fields validation
                 if (binding.tvTitle.text.isEmpty() || category.isEmpty() ||
@@ -169,7 +169,6 @@ class PlaceFormActivity : AppCompatActivity(), View.OnClickListener {
                             this@PlaceFormActivity, "Place Inserted",
                             Toast.LENGTH_SHORT
                         ).show()
-
                     }
                 }
                 //if edit is asked
