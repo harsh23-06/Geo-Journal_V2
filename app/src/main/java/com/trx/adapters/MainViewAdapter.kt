@@ -14,7 +14,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.LatLng
@@ -36,6 +35,8 @@ class MainViewAdapter(
 
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+
     private var currentLocation: LatLng? = null
     private var onClickListener: OnClickListener? = null
     private lateinit var database: PlacesDatabase
@@ -158,7 +159,6 @@ class MainViewAdapter(
         ) {
             return
         }
-
         fusedLocationClient?.lastLocation?.addOnSuccessListener { location ->
             location?.let {
                 currentLocation = LatLng(it.latitude, it.longitude)

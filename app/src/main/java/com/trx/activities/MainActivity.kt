@@ -1,11 +1,13 @@
 package com.trx.activities
 
-import android.annotation.SuppressLint
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
+import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -34,7 +36,7 @@ class MainActivity : AppCompatActivity() {
     //To hold the list of places form Database
     private var placesList: ArrayList<PlaceModel> = ArrayList()
 
-
+    //Instance of Adapter class to call its methods
     private var placesAdapter: MainViewAdapter? = null
 
     //for getting the spinner's Distance
@@ -45,11 +47,28 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        //-----------Ask for Permissions---------------
+        val requestCode = 69
+        val permissions = arrayOf(
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        )
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(this, permissions, requestCode)
+        }
+        //-----------------end-------------------------
+
         //Instantiating the Database
         database = PlacesDatabase.getInstance(applicationContext)
 
         //Getting places list from Database and setting up the recycler View
-
         getPlacesListFromDB()
 
 
@@ -148,7 +167,6 @@ class MainActivity : AppCompatActivity() {
                 placesList.addAll(it) //it as ArrayList<PlaceModel>
                 setupPlacesRecyclerView()
 
-
             } else {
                 binding.placesList.visibility = View.GONE
                 binding.tvDefaultPlace.visibility = View.VISIBLE
@@ -174,16 +192,14 @@ class MainActivity : AppCompatActivity() {
 
             1 -> {
                 tempList.clear()
-                val residentialList =
-                    placesList.filter { it.category == "RESIDENTIAL" }
+                val residentialList = placesList.filter { it.category == "RESIDENTIAL" }
                 tempList.addAll(residentialList)
                 placesAdapter!!.dataList(tempList)
             }
 
             2 -> {
                 tempList.clear()
-                val commercialList =
-                    placesList.filter { it.category == "COMMERCIAL" }
+                val commercialList = placesList.filter { it.category == "COMMERCIAL" }
                 tempList.addAll(commercialList)
                 placesAdapter!!.dataList(tempList)
             }
@@ -255,6 +271,20 @@ class MainActivity : AppCompatActivity() {
                 kotlin.math.sin(deltaLon / 2) * kotlin.math.sin(deltaLon / 2)
         val c = 2 * atan2(sqrt(a), sqrt(1 - a))
         return radiusOfEarth * c * 1000
+    }
+
+    //this method will handel the user's input on asking permissions
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if(requestCode == 69){
+            if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                recreate()
+            }
+        }
     }
 
 }
