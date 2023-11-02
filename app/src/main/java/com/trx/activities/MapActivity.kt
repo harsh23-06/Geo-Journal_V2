@@ -45,7 +45,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
     private lateinit var autoCompleteFragment: AutocompleteSupportFragment  //auto complete search
     private var mGoogleMap: GoogleMap? = null
     private var viewItem = false
-    private var markerList: LiveData<List<PlaceModel>>? = null
+    private var placeItem : PlaceModel?=null
+    private var markerList: ArrayList<PlaceModel>? = null
     private lateinit var database: PlacesDatabase
     private var viewMap: Boolean = false
     private var initialMarkers: ArrayList<Marker> = ArrayList()
@@ -63,12 +64,13 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         database = PlacesDatabase.getInstance(applicationContext)
         if (intent.hasExtra("AllMarker")) {
             viewMap = true
-            markerList = database.contactDao().getPlaces()
+            markerList = intent.getSerializableExtra("ListOfPlaces") as ArrayList<PlaceModel>
         }
         if(intent.hasExtra("Item")){
             viewItem = true
+            placeItem = intent.getSerializableExtra("Item") as PlaceModel
         }
-        if (viewMap) {
+        if (viewMap || viewItem) {
             //<----------For adding Google Map---------->
             // can use id with view binding like this
             val mapFragment = supportFragmentManager.findFragmentById(binding?.mapFragment!!.id)
@@ -124,21 +126,19 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         mGoogleMap?.uiSettings?.isZoomControlsEnabled = true
         setupMap()
 
-
-        markerList!!.observe(this) { places ->
-            for (i in places.indices) {
-                val position = LatLng(places[i].latitude, places[i].longitude)
-                googleMap.addMarker(
-                    MarkerOptions()
-                        .position(position)
-                        .title("fff")
-                )
-
-
-            }
-
-
+        //show item from detail activity
+        if(viewItem){
+            mGoogleMap!!.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(placeItem!!.latitude,placeItem!!.longitude),15f))
+            setDescMarker(placeItem!!, mGoogleMap!!)
         }
+        else if(viewMap){
+            for(model in markerList!!){
+                setDescMarker(model,nGoogleMap!!)
+            }
+        }
+
+
+
 
         //functions of draggable marker
         googleMap.setOnMarkerDragListener(object : GoogleMap.OnMarkerDragListener {
@@ -194,12 +194,12 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
                 if (location != null) {
                     val currentLatLang = LatLng(location.latitude, location.longitude)
 //                    if (intent.hasExtra("ADD")) placeMarkerOnMap(currentLatLang)
-                    nGoogleMap?.animateCamera(
-                        CameraUpdateFactory.newLatLngZoom(
-                            currentLatLang,
-                            15f
-                        )
-                    )
+//                    nGoogleMap?.animateCamera(
+//                        CameraUpdateFactory.newLatLngZoom(
+//                            currentLatLang,
+//                            15f
+//                        )
+//                    )
 
                     when (selectedDistance) {
                         "500m" -> {
@@ -317,5 +317,27 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
                 kotlin.math.sin(deltaLon / 2) * kotlin.math.sin(deltaLon / 2)
         val c = 2 * atan2(sqrt(a), sqrt(1 - a))
         return radiusOfEarth * c * 1000
+    }
+    private fun setDescMarker(placeModel: PlaceModel,map:GoogleMap ){
+        val green = BitmapDescriptorFactory.HUE_GREEN
+        val red = BitmapDescriptorFactory.HUE_RED
+        if(placeModel.category == "RESIDENTIAL"){
+            val position = LatLng(placeModel.latitude,placeModel.longitude)
+            map.addMarker(
+                MarkerOptions()
+                    .icon(BitmapDescriptorFactory.defaultMarker(green))
+                    .position(position)
+                    .title(placeModel.title)
+            )
+        }
+        else if(placeModel.category == "COMMERCIAL"){
+            val position = LatLng(placeModel.latitude,placeModel.longitude)
+            map.addMarker(
+                MarkerOptions()
+                    .icon(BitmapDescriptorFactory.defaultMarker(red))
+                    .position(position)
+                    .title(placeModel.title)
+            )
+        }
     }
 }

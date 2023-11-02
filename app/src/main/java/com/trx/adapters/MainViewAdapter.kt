@@ -54,8 +54,8 @@ class MainViewAdapter(
 
 
     @SuppressLint("NotifyDataSetChanged")
-    fun dataList(list:ArrayList<PlaceModel>){
-        this.list= list
+    fun dataList(list: ArrayList<PlaceModel>) {
+        this.list = list
         notifyDataSetChanged()
     }
 

@@ -7,11 +7,14 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
+import androidx.core.app.ActivityCompat
+import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.LatLng
 import com.trx.R
 import com.trx.adapters.MainViewAdapter
 import com.trx.database.PlacesDatabase
@@ -22,22 +25,28 @@ import com.trx.swipe.SwipeToEditCallback
 import kotlin.math.atan2
 import kotlin.math.sqrt
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     private lateinit var binding: ActivityMainBinding
-
+    private var distance: Double? = null
+    private var mPlacesList: LiveData<List<PlaceModel>>? = null
+    private lateinit var selectedDistance: String
+    private var selectedDescription = "All"
     //for current location
+    private val filteredMarkers: ArrayList<PlaceModel> = ArrayList()
+
     private var fusedLocationClient: FusedLocationProviderClient? = null
+    private var selectedFilter: String = "All"
 
     //initializing Database
-    private lateinit var database : PlacesDatabase
+    private lateinit var database: PlacesDatabase
 
+    private var currentLatLng: LatLng = LatLng(0.0, 0.0)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        //-----------Ask for Permissions---------------
+//-----------Ask for Permissions---------------
         val requestCode = 69
         val permissions = arrayOf(
             Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -54,72 +63,216 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(this, permissions, requestCode)
         }
         //-----------------end-------------------------
-
         //Instantiating the Database
         database = PlacesDatabase.getInstance(applicationContext)
-
+        mPlacesList = database.contactDao().getPlaces()
         //Getting all the places
-        getHappyPlacesListFromLocalDB()
-
+        getPlacesListFromLocalDB()
+        filterList(selectedFilter)
         //for Getting current location
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         //Handling the Spinner
-        binding.spDistance.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+        binding.spDistance.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             val distanceArray = resources.getStringArray(R.array.Distances_Filter)
-            override fun onItemSelected(adapterView: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val selectedDistance = distanceArray[position]
 
-                when(selectedDistance){
-                    "All" -> {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                selectedDistance = distanceArray[position]
+                filterMarkersByDistance(selectedDistance)
+            }
 
-                    }
-                    "500m" -> {
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+            }
 
-                    }
-                    "1km" -> {
+        }
 
-                    }
-                    "1.5km" -> {
+        binding.btnAddPlace.setOnClickListener(this)
+        binding.btnViewMap.setOnClickListener(this)
+        binding.chipAll.setOnClickListener(this)
+        binding.chipCommercial.setOnClickListener(this)
+        binding.chipResidential.setOnClickListener(this)
 
-                    }
-                    "2km" -> {
 
-                    }
-                    "2.5km" -> {
+    }
 
-                    }
-                    "3km" -> {
+    override fun onClick(v: View?) {
 
-                    }
+        when (v!!.id) {
+            R.id.chipAll -> {
+                selectedFilter = "All"
+                filterList(selectedFilter)
+                selectedDescription = "All"
+
+            }
+
+            R.id.chipCommercial -> {
+                filterList("COMMERCIAL")
+                selectedDescription = "COMMERCIAL"
+
+            }
+
+            R.id.chipResidential -> {
+                filterList("RESIDENTIAL")
+                selectedDescription = "RESIDENTIAL"
+
+            }//Handling the ADD Button
+            R.id.btn_addPlace -> {
+                Intent(this, MapActivity::class.java).also {
+                    it.putExtra("ADD", "ADDON_MAP")
+                    startActivity(it)
                 }
+            }//Handling the View Map button
+            R.id.btn_viewMap -> {
+                Intent(this, MapActivity::class.java).also {
+                    val distanceArray = resources.getStringArray(R.array.Distances_Filter)
 
+                    selectedDistance = distanceArray[binding.spDistance.selectedItemPosition]
+                    filteredMarkers.clear()
+                    mPlacesList!!.observe(this@MainActivity){models->
+                        for(model in models){
+                            if(selectedDescription == "All" || model.category == selectedDescription)
+                                filteredMarkers.add(model)
+                        }
+                    }
+                    it.putExtra("ListOfPlaces",filteredMarkers)
+                    it.putExtra("AllMarker", "VIEW_MAP")
+                    it.putExtra("SelectedDistance", selectedDistance)
+                    startActivity(it)
+                }
             }
-            override fun onNothingSelected(adapterView: AdapterView<*>?) {
+        }
+    }
 
+    private fun filterList(status: String) {
+        selectedFilter = status
+        database.contactDao().getPlaces().observe(this@MainActivity) {
+            val filteredList: ArrayList<PlaceModel> = ArrayList()
+            val newFilteredData = it.filter { item ->
+                item.category == status
+            }
+            val sortedList = if (status == "All") {
+                it.sortedBy { placeModel ->
+                    calculateDistance(
+                        currentLatLng.latitude,
+                        currentLatLng.longitude,
+                        placeModel.latitude,
+                        placeModel.longitude
+                    )
+                }
+            } else {
+                newFilteredData.sortedBy { placeModel ->
+                    calculateDistance(
+                        currentLatLng.latitude,
+                        currentLatLng.longitude,
+                        placeModel.latitude,
+                        placeModel.longitude
+                    )
+                }
+            }
+
+            filteredList.addAll(sortedList)
+
+            val placesAdapter = MainViewAdapter(this, fusedLocationClient, filteredList)
+            fusedLocationClient?.let { placesAdapter.setCurrentLocation(it) }
+            binding.placesList.adapter = placesAdapter
+        }
+
+
+    }
+
+    private fun getRadiusFromSelectedDistance(selectedDistance: String): Double {
+
+
+        when (selectedDistance) {
+            "All" -> {
+                distance = Double.MAX_VALUE
+            }
+
+            "500m" -> {
+                distance = 500.0
+            }
+
+            "1km" -> {
+                distance = 1000.0
+            }
+
+            "1.5km" -> {
+                distance = 1500.0
+            }
+
+            "2km" -> {
+                distance = 2000.0
+            }
+
+            "2.5km" -> {
+                distance = 2500.0
+            }
+
+            "3km" -> {
+                distance = 3000.0
             }
         }
 
-        //Handling the View Map button
-        binding.btnViewMap.setOnClickListener {
-            Intent(this,MapActivity::class.java)
-                .putExtra("VIEW","VIEW_MAP").also{
-                startActivity(it)
-            }
+
+
+        return distance!!
+
+    }
+
+    private fun filterMarkersByDistance(selectedDistance: String) {
+        val radius = getRadiusFromSelectedDistance(selectedDistance)
+
+        // Check if you have the necessary location permissions
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
         }
 
-        //Handling the ADD Button
-        binding.btnAddPlace.setOnClickListener{
-            Intent(this,MapActivity::class.java).also {
-                it.putExtra("ADD","ADDON_MAP")
-                startActivity(it)
+        mPlacesList!!.observe(this@MainActivity) {
+            fusedLocationClient?.lastLocation?.addOnSuccessListener(this) { location ->
+                if (location != null) {
+                    // Use the device's actual location
+                    val currentLatLng = LatLng(location.latitude, location.longitude)
+                    // Clear existing filtered markers
+                    filteredMarkers.clear()
+                    for (happyPlaceModel in it!!) {
+                        val distance = calculateDistance(
+                            currentLatLng.latitude,
+                            currentLatLng.longitude,
+                            happyPlaceModel.latitude,
+                            happyPlaceModel.longitude
+                        )
+
+                        if (distance <= radius) {
+                            filteredMarkers.add(happyPlaceModel)
+                        }
+                    }
+
+                    // Update the RecyclerView with the filtered markers
+                    setupPlacesRecyclerView(filteredMarkers)
+                } else {
+                    // Handle the case where location is not available
+                    // You can show an error message or use a default location
+                }
             }
+
         }
 
     }
 
     //for getting all the places from the database
-    private fun getHappyPlacesListFromLocalDB() {
+    private fun getPlacesListFromLocalDB() {
 
         val getPlacesList = database.contactDao().getPlaces()
 
@@ -127,12 +280,29 @@ class MainActivity : AppCompatActivity() {
             if (!it.isNullOrEmpty()) {
                 binding.placesList.visibility = View.VISIBLE
                 binding.tvDefaultPlace.visibility = View.GONE
-                setupHappyPlacesRecyclerView(it as ArrayList<PlaceModel>?)
+                setupPlacesRecyclerView(it as ArrayList<PlaceModel>?)
             } else {
                 binding.placesList.visibility = View.GONE
                 binding.tvDefaultPlace.visibility = View.VISIBLE
             }
         }
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+        fusedLocationClient?.lastLocation?.addOnSuccessListener(this) { location ->
+            if (location != null) {
+                // Use the device's actual location
+                currentLatLng = LatLng(location.latitude, location.longitude)
+            }
+        }
+
 
     }
 
@@ -142,11 +312,38 @@ class MainActivity : AppCompatActivity() {
     }
 
     //Function to setup the recycler View
-    private fun setupHappyPlacesRecyclerView(happyPlacesList: ArrayList<PlaceModel>?) {
+    private fun setupPlacesRecyclerView(placesList: ArrayList<PlaceModel>?) {
+
+        val newFilteredData = placesList!!.filter { item ->
+            item.category == selectedFilter
+        }
+        val sortedList = if (selectedFilter == "All") {
+            placesList.sortedBy { placeModel ->
+                calculateDistance(
+                    currentLatLng.latitude ?: 0.0,
+                    currentLatLng.longitude ?: 0.0,
+                    placeModel.latitude,
+                    placeModel.longitude
+                )
+            }
+        }
+        else {
+            newFilteredData.sortedBy { happyPlaceModel ->
+                calculateDistance(
+                    currentLatLng.latitude ?: 0.0,
+                    currentLatLng.longitude ?: 0.0,
+                    happyPlaceModel.latitude,
+                    happyPlaceModel.longitude
+                )
+            }
+        }
+
+
+
         binding.placesList.layoutManager = LinearLayoutManager(this)
         binding.placesList.setHasFixedSize(true)
 
-        val placesAdapter = MainViewAdapter(this, fusedLocationClient, happyPlacesList!!)
+        val placesAdapter = MainViewAdapter(this, fusedLocationClient, ArrayList(sortedList))
         fusedLocationClient?.let { placesAdapter.setCurrentLocation(it) }
         binding.placesList.adapter = placesAdapter
 
@@ -182,7 +379,7 @@ class MainActivity : AppCompatActivity() {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val adapter = binding.placesList.adapter as MainViewAdapter
                 adapter.removeAt(viewHolder.adapterPosition)
-                getHappyPlacesListFromLocalDB() // Gets the latest list from the local database after item being delete from it.
+                getPlacesListFromLocalDB() // Gets the latest list from the local database after item being delete from it.
             }
         }
 
@@ -209,6 +406,7 @@ class MainActivity : AppCompatActivity() {
         return radiusOfEarth * c * 1000
     }
 
+
     //this method will handel the user's input on asking permissions
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -216,11 +414,10 @@ class MainActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if(requestCode == 69){
-            if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+        if (requestCode == 69) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 recreate()
             }
         }
     }
-
 }
