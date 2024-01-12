@@ -45,14 +45,16 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
     private lateinit var autoCompleteFragment: AutocompleteSupportFragment  //auto complete search
     private var mGoogleMap: GoogleMap? = null
     private var viewItem = false
-    private var placeItem : PlaceModel?=null
+    private var placeItem: PlaceModel? = null
     private var markerList: ArrayList<PlaceModel>? = null
     private lateinit var database: PlacesDatabase
     private var viewMap: Boolean = false
     private var initialMarkers: ArrayList<Marker> = ArrayList()
+
     //Current location
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-
+    val green = BitmapDescriptorFactory.HUE_GREEN
+    val red = BitmapDescriptorFactory.HUE_RED
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,7 +68,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
             viewMap = true
             markerList = intent.getSerializableExtra("ListOfPlaces") as ArrayList<PlaceModel>
         }
-        if(intent.hasExtra("Item")){
+        if (intent.hasExtra("Item")) {
             viewItem = true
             placeItem = intent.getSerializableExtra("Item") as PlaceModel
         }
@@ -121,23 +123,28 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
     override fun onMapReady(googleMap: GoogleMap) {
         mGoogleMap = googleMap
-        nGoogleMap = googleMap
         //for zoom on current location
         mGoogleMap?.uiSettings?.isZoomControlsEnabled = true
         setupMap()
 
         //show item from detail activity
-        if(viewItem){
-            mGoogleMap!!.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(placeItem!!.latitude,placeItem!!.longitude),15f))
+        if (viewItem) {
+            mGoogleMap!!.animateCamera(
+                CameraUpdateFactory.newLatLngZoom(
+                    LatLng(
+                        placeItem!!.latitude,
+                        placeItem!!.longitude
+                    ), 15f
+                )
+            )
             setDescMarker(placeItem!!, mGoogleMap!!)
-        }
-        else if(viewMap){
-            for(model in markerList!!){
-                setDescMarker(model,nGoogleMap!!)
+        } else if (viewMap) {
+            nGoogleMap = googleMap
+
+            for (model in markerList!!) {
+                setDescMarker(model, nGoogleMap!!)
             }
         }
-
-
 
 
         //functions of draggable marker
@@ -189,10 +196,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
             ActivityCompat.requestPermissions(this, permissions, requestCode)
 
         }
-            nGoogleMap?.isMyLocationEnabled = true
-            fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
-                if (location != null) {
-                    val currentLatLang = LatLng(location.latitude, location.longitude)
+        nGoogleMap?.isMyLocationEnabled = true
+        fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
+            if (location != null) {
+                val currentLatLang = LatLng(location.latitude, location.longitude)
 //                    if (intent.hasExtra("ADD")) placeMarkerOnMap(currentLatLang)
 //                    nGoogleMap?.animateCamera(
 //                        CameraUpdateFactory.newLatLngZoom(
@@ -201,80 +208,86 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 //                        )
 //                    )
 
-                    when (selectedDistance) {
-                        "500m" -> {
-                            radius = 500.0
-                        }
-
-                        "1km" -> {
-                            radius = 1000.0
-                        }
-
-                        "1.5km" -> {
-                            radius = 1500.0
-                        }
-
-                        "2km" -> {
-                            radius = 2000.0
-                        }
-
-                        "3km" -> {
-                            radius = 3000.0
-                        }
-
-
+                when (selectedDistance) {
+                    "500m" -> {
+                        radius = 500.0
                     }
-                    if (selectedDistance == "All") {
-                        initialMarkers.forEach { marker ->
-                            marker.isVisible = true
-                        }
-                    } else {
-                        nGoogleMap?.clear()
-                        initialMarkers.clear()
-                        // Add a circle to represent the selected radius
-                        val circleOptions = CircleOptions()
-                            .center(currentLatLang)
-                            .radius(radius)
-                            .strokeColor(Color.GRAY)
-                        nGoogleMap?.addCircle(circleOptions)
 
-                        // Add markers within the selected radius
+                    "1km" -> {
+                        radius = 1000.0
+                    }
 
-                        val markersFromDatabase = database.contactDao().getPlaces()
-                        markersFromDatabase.observe(this@MapActivity){
-                            for (happyPlaceModel in it) {
-                                val markerPosition = LatLng(
-                                    happyPlaceModel.latitude,
-                                    happyPlaceModel.longitude
-                                )
+                    "1.5km" -> {
+                        radius = 1500.0
+                    }
 
-                                val distance = calculateDistance(
-                                    currentLatLang.latitude,
-                                    currentLatLang.longitude,
-                                    markerPosition.latitude,
-                                    markerPosition.longitude
-                                )
+                    "2km" -> {
+                        radius = 2000.0
+                    }
 
-                                if (distance <= radius) {
-                                    // Marker is within the selected radius, so display it
-                                    val markerOptions = MarkerOptions()
-                                        .position(markerPosition)
-                                        .title(happyPlaceModel.title)
-                                    nGoogleMap?.addMarker(markerOptions)
-                                }
-                            }
-                        }
+                    "3km" -> {
+                        radius = 3000.0
+                    }
 
+
+                }
+                if (selectedDistance == "All") {
+                    initialMarkers.forEach { marker ->
+                        marker.isVisible = true
                     }
                 } else {
-                    Toast.makeText(
-                        this, "Cannot fetch current place",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    nGoogleMap?.clear()
+                    initialMarkers.clear()
+                    // Add a circle to represent the selected radius
+                    val circleOptions = CircleOptions()
+                        .center(currentLatLang)
+                        .radius(radius)
+                        .strokeColor(Color.GRAY)
+                    nGoogleMap?.addCircle(circleOptions)
+
+                    // Add markers within the selected radius
+
+                    val markersFromDatabase = database.contactDao().getPlaces()
+                    markersFromDatabase.observe(this@MapActivity) {
+                        for (happyPlaceModel in it) {
+                            val markerPosition = LatLng(
+                                happyPlaceModel.latitude,
+                                happyPlaceModel.longitude
+                            )
+
+                            val distance = calculateDistance(
+                                currentLatLang.latitude,
+                                currentLatLang.longitude,
+                                markerPosition.latitude,
+                                markerPosition.longitude
+                            )
+
+                            if (distance <= radius) {
+                                // Marker is within the selected radius, so display it
+                                val markerOptions = MarkerOptions()
+                                    .icon(
+                                        if (happyPlaceModel.category == "RESIDENTIAL")
+                                            BitmapDescriptorFactory.defaultMarker(green)
+                                        else
+                                            BitmapDescriptorFactory.defaultMarker(red)
+                                    )
+                                    .position(markerPosition)
+                                    .title(happyPlaceModel.title)
+                                nGoogleMap?.addMarker(markerOptions)
+                            }
+                        }
+                    }
+
                 }
-
-
+            } else {
+                Toast.makeText(
+                    this, "Cannot fetch current place",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
+
+
+        }
 
     }
 
@@ -318,20 +331,19 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         val c = 2 * atan2(sqrt(a), sqrt(1 - a))
         return radiusOfEarth * c * 1000
     }
-    private fun setDescMarker(placeModel: PlaceModel,map:GoogleMap ){
-        val green = BitmapDescriptorFactory.HUE_GREEN
-        val red = BitmapDescriptorFactory.HUE_RED
-        if(placeModel.category == "RESIDENTIAL"){
-            val position = LatLng(placeModel.latitude,placeModel.longitude)
+
+    private fun setDescMarker(placeModel: PlaceModel, map: GoogleMap) {
+
+        if (placeModel.category == "RESIDENTIAL") {
+            val position = LatLng(placeModel.latitude, placeModel.longitude)
             map.addMarker(
                 MarkerOptions()
                     .icon(BitmapDescriptorFactory.defaultMarker(green))
                     .position(position)
                     .title(placeModel.title)
             )
-        }
-        else if(placeModel.category == "COMMERCIAL"){
-            val position = LatLng(placeModel.latitude,placeModel.longitude)
+        } else if (placeModel.category == "COMMERCIAL") {
+            val position = LatLng(placeModel.latitude, placeModel.longitude)
             map.addMarker(
                 MarkerOptions()
                     .icon(BitmapDescriptorFactory.defaultMarker(red))
